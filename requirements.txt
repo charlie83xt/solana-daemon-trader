@@ -1,0 +1,7 @@
+solana
+pandas
+numpy
+asyncio
+requests
+httpx
+jupyter
