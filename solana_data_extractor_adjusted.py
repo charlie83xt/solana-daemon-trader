@@ -1,5 +1,5 @@
 from solana.rpc.api import Client
-from solana.rpc.websocket_api import SolanaWsClient
+# from solana.rpc.websocket_api import SolanaWsClient
 from solana.rpc.commitment import Commitment
 import asyncio
 import json
@@ -133,7 +133,7 @@ async def get_recent_transactions_and_send_to_agent(num_transactions=5):
 async def main():
     # Run both functions concurrently
     await asyncio.gather(
-        subscribe_to_new_blocks(),
+        # subscribe_to_new_blocks(),
         get_recent_transactions_and_send_to_agent()
     )
 

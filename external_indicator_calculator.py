@@ -18,7 +18,7 @@ async def get_indicators_from_external_api(ohlcv_data: dict) -> dict:
     async with httpx.AsyncClient() as client:
         try:
             print(f"Sending OHLCV data to external indicator API...")
-            response await client.post(EXTERNAL_INDICATOR_API_URL, json=oclcv_data, headers=headers, timeout=15.0)
+            response = await client.post(EXTERNAL_INDICATOR_API_URL, json=oclcv_data, headers=headers, timeout=15.0)
             response.raise_for_status()
             # Raise and exception for 4xx or 5xx status codes
             return response.json()
@@ -67,8 +67,8 @@ async def main():
         # Assuming the external API returns a structure like:
         # {"SMA_10": [...], "RSI_14": [...], ...}
         print(pd.DataFrame(indicators).tail())
-        else:
-            print("Failed to retrieve indicators from external API.")
+    else:
+        print("Failed to retrieve indicators from external API.")
 
 if __name__ == "__main__":
     try:

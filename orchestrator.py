@@ -1,33 +1,40 @@
 import os
 import asyncio
 from dotenv import load_dotenv
-from solana_data_extractor_adjusted import SolanaDataExtractor
-from external_indicator_calculator import IndicatorCalculator
+# from solana_data_extractor_adjusted import SolanaDataExtractor
+# from external_indicator_calculator import IndicatorCalculator
 from external_ai_agent_decision import AIAgentCaller
 from executor import TransactionExecutor
 
 class TraderOrchestrator:
     def __init__(self):
-        load_dotenv()
+        load_dotenv(override=True)
 
         self.rpc_url = os.getenv("SOLANA_RPC_URL")
         self.max_position = float(os.getenv("MAX_POSITION_SIZE", 0.1))
-        self.max_daily_loss = float(os.getenv("MAX_POSITION_SIZE", 0.1))
+        self.max_daily_loss = float(os.getenv("MAX_DAILY_LOSS", 3.0))
         
-        self.extractor = SolanaDataExtractor(self.rpc_url)
-        self.indicator = IndicatorCalculator()
+        # self.extractor = SolanaDataExtractor(self.rpc_url)
+        # self.indicator = IndicatorCalculator()
         self.ai_agent = AIAgentCaller()
         self.executor = TransactionExecutor(self.rpc_url)
 
     async def run_cycle(self):
         # 1) Get market data
-        market_data = await self.extractor.get_market_data()
+        # market_data = await self.extractor.get_market_data()
 
         # 2) Compute indicators
-        indicators = self.indicator.compute_indicators(market_data)
+        # indicators = self.indicator.compute_indicators(market_data)
+        # Temporary Indicators for testing
+        indicators = {
+            "price": 150.25,
+            "sma_20": 148.5,
+            "sma_50": 145.8,
+            "rsi": 60.2
+        }
 
         # 3) Get AI decision
-        decision = self.ai_agent.get_trade_decision(indicators)
+        decision = await self.ai_agent.get_trade_decision(indicators)
 
         # 4) Check Risk (basic example)
         if decision['action'] == 'BUY':
@@ -42,3 +49,7 @@ class TraderOrchestrator:
 
         else:
             print("[Orchestrator] No action taken this cycle.")
+
+if __name__ == "__main__":
+    trader = TraderOrchestrator()
+    asyncio.run(trader.run_cycle())
