@@ -1,4 +1,4 @@
-💡 What it is:
+###💡 What it is:
 An autonomous trader that uses live market data, technical indicators, and multiple AI agents to make, evaluate, and execute trade decisions on Solana — safely, securely, and without human intervention.
 
 * 🧲 Live data extraction --=> Fetches real-time SOL/USDC prices and historical data from CoinGecko
