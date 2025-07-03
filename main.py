@@ -2,18 +2,39 @@ import asyncio
 import os
 from dotenv import load_dotenv
 from orchestrator import TraderOrchestrator
+from price_history_logger import PriceHistoryLogger
+from multi_token_trader import MultiTokenTrader
+# from real_market_data import RealMarketDataFetcher
+# from external_indicator_calculator import IndicatorCalculator
 
 async def main():
     load_dotenv()
     interval = int(os.getenv("POLL_INTERVAL", 300)) # run every 5 mins
 
-    print(f"[Runner] Starting trader loop on Devnet every {interval} seconds...")
+    print(f"[Runner] Starting trader loop every {interval} seconds...")
 
+    # market_fetcher = RealMarketDataFetcher()
     orchestrator = TraderOrchestrator()
+    multitoken = MultiTokenTrader(
+        orchestrator.market_fetcher,
+        orchestrator.indicator,
+        orchestrator.agent_ensemble,
+        orchestrator.risk,
+        orchestrator.executor
+    )
+
+    price_logger = PriceHistoryLogger()
+
+    
+    await orchestrator.run_cycle()
 
     while True:
         try:
+            print("\n--- [Cycle Start] ---")
+            price_logger.fetch_and_log()
+            await multitoken.evaluate_and_trade_top_tokens()
             await orchestrator.run_cycle()
+            print("--- [Cycle Complete] ---\n")
         except Exception as e:
             print(f"[Runner] Error during run_cycle: {e}")
         await asyncio.sleep(interval)

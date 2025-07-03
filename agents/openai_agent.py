@@ -16,7 +16,7 @@ class OpenAIAgent(BaseAgent):
         You are a Solana crypto trading agent.
 
         Respond ONLY with a JSON object in the following format and nothing else: 
-        {{"action": "BUY", "amount": 0.1, "confidence": 0.92}}
+        {{"action": "BUY", "amount": 0.05, "confidence": 0.92}}
 
         Do not explain your answer. Do not include any text or formatting.
 

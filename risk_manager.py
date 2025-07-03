@@ -1,12 +1,14 @@
 import csv
 import os
 from datetime import datetime, timedelta
+from log_router import LogRouter
 
 class RiskManager:
     def __init__(self, max_daily_loss=3.0, cooldown_minutes=10, log_file="logs/trade_log.csv"):
         self.max_daily_loss = max_daily_loss
         self.cooldown_minutes = cooldown_minutes
         self.log_file = log_file
+        self.logger = LogRouter(use_drive=True)
 
         self._ensure_log_file()
         self.last_trade_time = None
@@ -17,10 +19,10 @@ class RiskManager:
         if not os.path.exists(self.log_file):
             with open(self.log_file, mode='w', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerow(["timestamp", "action", "amount", "price", "confidence"])
+                writer.writerow(["timestamp", "action", "amount", "price", "confidence", "symbol", "tx_sig"])
 
 
-    def log_trade(self, action, amount, price, confidence):
+    def log_trade(self, action, amount, price, confidence, symbol='SOL', tx_sig='-'):
         now = datetime.utcnow().isoformat()
         row = [now, action, amount, price, confidence]
 
@@ -35,7 +37,11 @@ class RiskManager:
 
         with open(self.log_file, mode='a', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow([now, action, amount, price, confidence])
+            writer.writerow([now, action, amount, price, confidence, symbol, tx_sig])
+            try:
+                self.logger.log_local_and_remote(self.log_file)
+            except Exception as e:
+                print(f"[DriveLogger] in RiskManager Failed to sync: {e}")
         self.last_trade_time = datetime.utcnow()
 
 
