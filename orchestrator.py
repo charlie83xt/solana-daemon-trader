@@ -10,6 +10,8 @@ from real_market_data import RealMarketDataFetcher
 from agents.openai_agent import OpenAIAgent
 from agents.threshold_agent import ThresholdAgent
 from agents.agent_orchestrator import AgentOrchestrator
+from multi_token_trader import MultiTokenTrader
+import traceback
 
 
 class TraderOrchestrator:
@@ -76,9 +78,26 @@ class TraderOrchestrator:
             self.risk.log_trade(action, amount, indicators["price"], decision.get("confidence", 1.0))
 
         except Exception as e:
+            # print(f"[Orchestrator] Error during run_cycle().")
+            # print(f"Type: {type(e)}")
+            # print(f"Args: {e.args}")
+            # print(f"Full traceback:")
+            # traceback.print_exc()
             print(f"[Orchestrator] Error during run_cycle: {e}")
 
 
-if __name__ == "__main__":
-    trader = TraderOrchestrator()
-    asyncio.run(trader.run_cycle())
+# async def main():
+#     trader = TraderOrchestrator()
+#     multitoken = MultiTokenTrader(
+#         trader.market_fetcher,
+#         trader.indicator,
+#         trader.agent_ensemble,
+#         trader.risk,
+#         trader.executor
+#     )
+#     await multitoken.evaluate_and_trade_top_tokens()
+#     await trader.run_cycle()
+
+
+# if __name__ == "__main__":
+#     asyncio.run(main())
