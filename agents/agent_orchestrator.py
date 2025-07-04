@@ -27,24 +27,61 @@ class AgentOrchestrator:
         votes = []
 
         for agent in self.agents:
-            decision = await agent.get_decision(indicators)
-            # votes.append((agent.name, decision))
-            votes.append(decision)
-            self._log_vote(agent.name, decision)
-        
+            try:
+                decision = await agent.get_decision(indicators)
+                # votes.append((agent.name, decision))
+                votes.append((agent.__class__.__name__, decision))
+                self._log_vote(agent.__class__.__name__, decision)
+            except Exception as e:
+                print(f"[AgentOrchestrator] Agent error: {e}")
+
+        if not votes:
+            print(f"[AgentOrchestrator] Not valid agent votes.")
+            return {"action": "HOLD", "amount": 0.0, "confidence": 0.0}
+
+        # Group by action
+        grouped = {}
+        for _, decision in votes:
+            action = decision["action"]
+            grouped.setdefault(action, []).append(decision)
+            
+            # action_count[action] += 1
+            # avg_confidence += decision.get("confidence", 0.0)
+            # avg_amount += decision.get("amount", 0.0)
+
+        # Weighted average
+        def weighted_average(vote_list):
+            total_weight = sum(v["confidence"] for v in vote_list)
+            if total_weight == 0:
+                return 0.0, 0.0
+            weighted_amount = sum(v["amount"] * v["confidence"] for v in vote_list) / total_weight
+            weighted_conf = total_weight / len(vote_list)
+            return weighted_amount, weighted_conf
+
+        base_action = None
+        best_confidence = -1
+        best_amount = 0.0
+
+        for action, decisions in grouped.items():
+            amount, conf = weighted_average(decisions)
+            if conf > best_confidence:
+                best_confidence = conf
+                best_action = action
+                amount = amount
+
         # Majority vote logic
-        actions = [v["action"] for v in votes]
-        final_action = max(set(actions), key=actions.count)
+        # actions = [v["action"] for v in votes]
+        # final_action = max(set(actions), key=actions.count)
 
-        agreeing_votes = [v for v in votes if v["action"] == final_action]
+        # agreeing_votes = [v for v in votes if v["action"] == final_action]
 
-        avg_amount = sum(v["amount"] for v in agreeing_votes) / len(agreeing_votes)
-        avg_confidence = sum(v["confidence"] for v in agreeing_votes) / len(agreeing_votes)
+        # avg_amount = sum(v["amount"] for v in agreeing_votes) / len(agreeing_votes)
+        # avg_confidence = sum(v["confidence"] for v in agreeing_votes) / len(agreeing_votes)
 
-        print(f"[AgentOrchestrator] Agent votes:")
-        for i, vote in enumerate(votes):
-            print(f"    - {self.agents[i].name}: {vote}")
-        print(f"[Final Decision] {final_action} {avg_amount:.3f} {indicators.get("symbol", "SOL")} @ confidence {avg_confidence * 100:.1f}%")
+        # print(f"[AgentOrchestrator] Agent votes:")
+        # for i, vote in enumerate(votes):
+        #     print(f"    - {self.agents[i].name}: {vote}")
+        print(f"[Final Decision] {best_action} {amount:.3f} {indicators.get("symbol", "SOL")} @ confidence {best_confidence * 100:.1f}%")
 
         # Simple majority resolver: BUY > HOLD > SELL
         # action_count = {"BUY": 0, "SELL": 0, "HOLD": 0}
@@ -60,9 +97,9 @@ class AgentOrchestrator:
         # final_action = max(action_count, key=action_count.get)
         # n = len(votes)
         return {
-            "action": final_action,
-            "amount": round(avg_amount, 4),
-            "confidence": round(avg_confidence, 4)
+            "action": best_action,
+            "amount": round(amount, 4),
+            "confidence": round(best_confidence, 4)
         }
     
     

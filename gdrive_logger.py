@@ -46,7 +46,16 @@ class DriveLogger:
         folder.InsertPermission(permission)
         return folder['id']
 
-        
+    
+    def _get_file_id(self, filename: str) -> str:
+        basename = os.path.basename(filename)
+        query = (
+            f"title='{basename}' and '{self.folder_id}' in parents and trashed=false"
+        )
+        file_list = self.drive.ListFile({'q': query}).GetList()
+        if file_list:
+            return file_list[0]['id']
+        return None
 
         
     def upload_or_append(self, local_csv_path, remote_filename="trade_log.csv"):
@@ -61,15 +70,30 @@ class DriveLogger:
             new_file.Upload()
 
         else:
-            print("[DriveLogger] Appending to existing log...")
+            print("[DriveLogger] Appending to existing log {remote_filename}...")
             existing = file_list[0]
-            existing.GetContentFile("temp_existing.csv")
-            with open("temp_existing.csv", "a", newline="") as f1, open(local_csv_path, "r") as f2:
+            temp_existin_path = "temp_existing.csv"
+            existing.GetContentFile(temp_existin_path)
+            with open(temp_existin_path, "a", newline="") as f1, open(local_csv_path, "r") as f2:
                 reader = csv.reader(f2)
                 next(reader) # Skip header
                 writer = csv.writer(f1)
                 for row in reader:
                     writer.writerow(row)
-            existing.SetContentFile("temp_existing.csv")
+            existing.SetContentFile(temp_existin_path)
             existing.Upload()
-            os.remove("temp_existing.csv")
+            os.remove(temp_existin_path)
+
+    def download_file(self, filename: str) -> str | None:
+        file_id = self._get_file_id(filename)
+        if not file_id:
+            print(f"[DriverLogger] File '{filename}' not found on Google Drive '{FOLDER_NAME}'.")
+            return None
+        
+        file = self.drive.CreateFile({"id": file_id})
+        file.FetchMetadata()
+        return file.GetContentString()
+
+
+    
+    
