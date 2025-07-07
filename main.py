@@ -6,6 +6,7 @@ from price_history_logger import PriceHistoryLogger
 from multi_token_trader import MultiTokenTrader
 # from real_market_data import RealMarketDataFetcher
 # from external_indicator_calculator import IndicatorCalculator
+import traceback
 
 async def main():
     load_dotenv()
@@ -20,7 +21,7 @@ async def main():
         orchestrator.indicator,
         orchestrator.agent_ensemble,
         orchestrator.risk,
-        orchestrator.executor
+        orchestrator.keypair
     )
 
     price_logger = PriceHistoryLogger()
@@ -37,6 +38,11 @@ async def main():
             print("--- [Cycle Complete] ---\n")
         except Exception as e:
             print(f"[Runner] Error during run_cycle: {e}")
+            # print(f"[Runner] Error during run_cycle().")
+            # print(f"Type: {type(e)}")
+            # print(f"Args: {e.args}")
+            # print(f"Full traceback:")
+            # traceback.print_exc()
         await asyncio.sleep(interval)
 
 if __name__ == "__main__":

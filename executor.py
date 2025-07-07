@@ -28,19 +28,22 @@ class TransactionExecutor:
             print(f"[Executor] DRY_RUN enabled -- Simulating {action} of {amount} SOL.")
             return
 
-        # Real trade execution logic.
-        dummy_recipient = Pubkey.from_string("3Vk5TtQXeirGG1BpwyCxH489H76yp1en3Au1fLZ1PPc1")
+        # Dummy trade execution logic.
+        dummy_recipient = Pubkey.from_string(os.getenv("DRY_RUN_RECIPIENT_WALLET"))
 
         # if action == 'BUY' or action == 'SELL':
-        tx = Transaction().add(
-            transfer(
-                TransferParams(
-                    from_pubkey=self.keypair.pubkey(),
-                    to_pubkey=dummy_recipient,
-                    lamports=int(amount * 1e9) # SOL = 1e9 Lamports
+        if self.dry_run:
+            tx = Transaction().add(
+                transfer(
+                    TransferParams(
+                        from_pubkey=self.keypair.pubkey(),
+                        to_pubkey=dummy_recipient,
+                        lamports=int(amount * 1e9) # SOL = 1e9 Lamports
+                    )
                 )
             )
-        )
+        else:
+            print(f"[Executor] Real trades are now handled by JupiterSwapper")
 
         response = self.client.send_transaction(tx, self.keypair)
         print(f"[Executor] Transaction submitted: {response}")

@@ -3,6 +3,7 @@ import csv
 from datetime import datetime
 import os
 from log_router import LogRouter
+from performance_monitor import PerformanceMonitor
 
 
 class AgentOrchestrator:
@@ -12,6 +13,7 @@ class AgentOrchestrator:
         self._ensure_vote_log()
         self.logger = LogRouter(use_drive=True)
 
+        self.monitor = PerformanceMonitor()
     
     def _ensure_vote_log(self):
         os.makedirs(os.path.dirname(self.vote_log), exist_ok=True)
@@ -39,15 +41,27 @@ class AgentOrchestrator:
             print(f"[AgentOrchestrator] Not valid agent votes.")
             return {"action": "HOLD", "amount": 0.0, "confidence": 0.0}
 
-        # Group by action
+        # Evaluate past performance and adapt threshold
+        performance = self.monitor.evaluate()
+        if performance:
+            print(f"[PerformanceMonitor] Recent stats: {performance}")
+            for agent in self.agents:
+                if agent.__class__.__name__ == "ThresholdAgent":
+                    old_threshold = getattr(agent, "conf_threshold", None)
+                    if performance["win_rate"] < 0.5:
+                        agent.conf_threshold = 0.75
+                    elif performance["win_rate"] > 0.8:
+                        agent.conf_threshold = 0.4
+                    else:
+                        agent.conf_threshold = 0.6
+                    if old_threshold != agent.conf_threshold:
+                        print(f"[PerformanceMonitor] Threshold adjusted from {old_threshold} to {agent.conf_threshold}")
+
+        # Group by decisions by action type
         grouped = {}
         for _, decision in votes:
             action = decision["action"]
             grouped.setdefault(action, []).append(decision)
-            
-            # action_count[action] += 1
-            # avg_confidence += decision.get("confidence", 0.0)
-            # avg_amount += decision.get("amount", 0.0)
 
         # Weighted average
         def weighted_average(vote_list):
@@ -67,40 +81,17 @@ class AgentOrchestrator:
             if conf > best_confidence:
                 best_confidence = conf
                 best_action = action
-                amount = amount
+                best_amount = amount
 
-        # Majority vote logic
-        # actions = [v["action"] for v in votes]
-        # final_action = max(set(actions), key=actions.count)
-
-        # agreeing_votes = [v for v in votes if v["action"] == final_action]
-
-        # avg_amount = sum(v["amount"] for v in agreeing_votes) / len(agreeing_votes)
-        # avg_confidence = sum(v["confidence"] for v in agreeing_votes) / len(agreeing_votes)
-
-        # print(f"[AgentOrchestrator] Agent votes:")
-        # for i, vote in enumerate(votes):
-        #     print(f"    - {self.agents[i].name}: {vote}")
-        print(f"[Final Decision] {best_action} {amount:.3f} {indicators.get("symbol", "SOL")} @ confidence {best_confidence * 100:.1f}%")
-
-        # Simple majority resolver: BUY > HOLD > SELL
-        # action_count = {"BUY": 0, "SELL": 0, "HOLD": 0}
-        # avg_confidence = 0.0
-        # avg_amount = 0.0
-
-        # for _, decision in votes:
-        #     action = decision.get("action", "HOLD")
-        #     action_count[action] += 1
-        #     avg_confidence += decision.get("confidence", 0.0)
-        #     avg_amount += decision.get("amount", 0.0)
-
-        # final_action = max(action_count, key=action_count.get)
-        # n = len(votes)
-        return {
+        final_decision = {
             "action": best_action,
-            "amount": round(amount, 4),
+            "amount": round(best_amount, 4),
             "confidence": round(best_confidence, 4)
         }
+
+        print(f"[Final Decision] {best_action} {amount:.3f} {indicators.get("symbol", "SOL")} @ confidence {best_confidence * 100:.1f}%")
+
+        return final_decision
     
     
     def _log_vote(self, agent_name, decision):

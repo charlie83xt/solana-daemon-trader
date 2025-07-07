@@ -3,26 +3,39 @@ import asyncio
 from token_scanner import fetch_top_tokens
 from jupiter_swapper import JupiterSwapper
 from gdrive_logger import DriveLogger
+from token_performance import TokenPerformanceTracker
+from sentiment_fetcher import SentimentSignalFetcher
 
 class MultiTokenTrader:
-    def __init__(self, market_fetcher, indicator, agent_ensemble, risk, executor):
+    def __init__(self, market_fetcher, indicator, agent_ensemble, risk, keypair): #Before: (self, market_fetcher, indicator, agent_ensemble, risk, executor)
         self.market_fetcher = market_fetcher
         self.indicator = indicator
         self.agent_ensemble = agent_ensemble
         self.risk = risk
-        self.executor = executor
-        self.swapper = JupiterSwapper(self.executor)
+        self.keypair = keypair
+        self.swapper = JupiterSwapper(self.keypair)
 
+        self.performance_tracker = TokenPerformanceTracker()
+        self.signal_fetcher = SentimentSignalFetcher()
     
     async def evaluate_and_trade_top_tokens(self):
-        tokens = fetch_top_tokens(limit=3)
+        tokens = fetch_top_tokens(limit=10)
+
         if not tokens:
             print(f"[MultiTokenTrader] No tokens found.")
             return
 
+        preferred_symbols = self.performance_tracker.top_tokens_by_pnl()
+        tokens = [t for t in tokens if t["symbol"] in preferred_symbols]
+
+
+        print(f"[MultiTokenTrader] Selected top tokens: {preferred_symbols}")
+
         best_decision = {"confidence": 0.0}
         best_token = None
         best_indicators = None
+
+        self.signal_fetcher.cache_volumes(tokens)
 
         for token in tokens:
             print(f"[MultiTokenTrader] Evaluating {token['symbol']}...")
@@ -34,6 +47,14 @@ class MultiTokenTrader:
                 indicators = self.indicator.compute_indicators(price_data)
                 indicators['symbol'] = token['symbol']
                 decision = await self.agent_ensemble.resolve_decision(indicators)
+
+                # Injecting sentiment Boost
+                social = self.signal_fetcher.get_social_score(token["symbol"])
+                onchain = self.signal_fetcher.get_onchain_popularity(token["address"])
+                combined = 0.5 * social + 0.5 * onchain
+                decision["confidence"] *= (1 + combined)
+
+                print(f"[MultiTokenTrader] Sentiment-adjusted confidence for {token['symbol']}: {decision['confidence']:.2f}")
 
                 if decision["confidence"] > best_decision["confidence"]:
                     best_decision = decision
@@ -52,7 +73,8 @@ class MultiTokenTrader:
                 best_decision["price"],
                 best_decision.get("confidence", 1.0),
                 best_indicators.get("symbol", "UNKNOWN"),
-                tx_sig
+                tx_sig,
+                combined
             )
             DriveLogger().upload_or_append("logs/trade_log.csv")
         else:

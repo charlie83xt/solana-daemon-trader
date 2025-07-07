@@ -6,40 +6,54 @@ from gdrive_logger import DriveLogger
 import io
 
 class RiskManager:
-    def __init__(self, max_daily_loss=0.1, cooldown_minutes=10, log_file="logs/trade_log.csv"):
-        self.max_daily_loss = max_daily_loss
+    def __init__(self, cooldown_minutes=10, log_file="logs/trade_log.csv"):
+        self.max_daily_loss = float(os.getenv("MAX_DAILY_LOSS", 0.3))
         self.cooldown_minutes = cooldown_minutes
         self.log_file = log_file
         self.logger = LogRouter(use_drive=True)
+        self.drive = DriveLogger()
 
         self._ensure_log_file()
         self.last_trade_time = None
 
+        self.min_confidence = float(os.getenv("MIN_CONFIDENCE_THRESHOLD", 0.75))
+        self.max_loss_streak = int(os.getenv("MAX_CONSECUTIVE_LOSSES", 3))
+        self.loss_streak = 0
 
     def _ensure_log_file(self):
         os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
         if not os.path.exists(self.log_file):
             with open(self.log_file, mode='w', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerow(["timestamp", "action", "amount", "price", "confidence", "symbol", "tx_sig"])
+                writer.writerow(["timestamp", "action", "amount", "price", "confidence", "symbol", "tx_sig", "pnl", "return_pct"])
 
 
-    def log_trade(self, action, amount, price, confidence, symbol='SOL', tx_sig='-'):
+    def log_trade(self, action, amount, price, confidence, symbol='SOL', tx_sig='-', sentiment=None):
         now = datetime.utcnow().isoformat()
-        row = [now, action, amount, price, confidence, symbol, tx_sig]
+        row = [now, action, amount, price, confidence, symbol, tx_sig, sentiment]
+
+        pnl = ""
+        return_pct = ""
         
         # For PnL: store BUYs and SELLs in matched pairs
         if action == 'BUY':
             row += ["", ""] # PnL and %return will be filled in after SELL
         elif action == 'SELL':
-            pnl, ret = self.calculate_trade_pnl(amount, price)
-            row += [round(pnl, 4), round(ret, 4)]
+            pnl_val, ret = self.calculate_trade_pnl(amount, price)
+            pnl = round(pnl_val, 4)
+            row += [round(pnl_val, 4), round(ret, 4)]
+            if pnl_val < 0:
+                self.loss_streak += 1
+            else:
+                 self.loss_streak = 0
         else:
             row += ["", ""]
 
+        self._ensure_log_file()
+
         with open(self.log_file, mode='a', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow([now, action, amount, price, confidence, symbol, tx_sig])
+            writer.writerow([now, action, amount, price, confidence, symbol, tx_sig, pnl, return_pct, sentiment])
             try:
                 self.logger.log_local_and_remote(self.log_file)
             except Exception as e:
@@ -103,7 +117,7 @@ class RiskManager:
             if file_data is None or not file_data.strip():
                 print(f"[RiskManager] No data downloaded from log file for summary. Summary skipped.")
                 return
-                
+
             reader = csv.reader(io.StringIO(file_data))
 
             # Skip header row
@@ -193,8 +207,7 @@ class RiskManager:
         today = datetime.utcnow().date
         try:
             # 🔄 Download log file from drive as in-memory string
-            drive = DriveLogger()
-            file_data = drive.download_file(os.path.basename(self.log_file))
+            file_data = self.drive.download_file(os.path.basename(self.log_file))
             if not file_data:
                 print(f"[RiskManager] No data downloaded from log file for daily loss calculation.")
                 return 0.0
@@ -252,7 +265,7 @@ class RiskManager:
         rsi = indicators.get("rsi", 50)
         
         # 1. Only allow high confidence trades
-        if confidence < 0.75:
+        if confidence < self.min_confidence:
             print(f"[RiskManager] Confidence too low: {confidence}")
             return False
         
@@ -271,6 +284,10 @@ class RiskManager:
         # 3. Check daily loss cap
         if confidence < 0.75:
             print(f"[RiskManager] Confidence too low: {confidence}")
+            return False
+
+        if self.loss_streak >= self.max_loss_streak:
+            print(f"[RiskManager] Trade rejected: max loss streak ({self.loss_streak} reached)")
             return False
 
         daily_loss = self.calculate_daily_loss()

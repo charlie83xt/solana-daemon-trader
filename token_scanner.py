@@ -1,7 +1,7 @@
 import requests
 
 
-def fetch_top_tokens(limit=5):
+def fetch_top_tokens(limit=20):
     """
     Fetch top sSolana tokens by volume from Jupoiter API
     """

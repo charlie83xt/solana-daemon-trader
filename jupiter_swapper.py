@@ -21,12 +21,13 @@ from solders.instruction import Instruction
 
 
 class JupiterSwapper:
-    def __init__(self, executor):
-        self.executor = executor
+    def __init__(self, keypair): # Before: (self, executor)
+        # self.executor = executor
+        self.keypair = keypair
         self.client = Client(os.getenv("SOLANA_RPC_URL"))
 
-        key_json = json.loads(os.getenv("PRIVATE_KEY_JSON"))
-        self.wallet = SoldersKeypair.from_bytes(bytes(key_json))
+        # key_json = json.loads(os.getenv("PRIVATE_KEY_JSON"))
+        self.wallet = SoldersKeypair.from_bytes(bytes(self.keypair))
         self.api_key = os.getenv("JUPITER_API_KEY")
 
         self.headers = {}
@@ -126,11 +127,12 @@ class JupiterSwapper:
             return result.value
 
         except Exception as e:
-            print("[JupiterSwapper] Failed with an unexpected error.")
-            print(f"Type: {type(e)}")
-            print(f"Args: {e.args}")
-            print("Full traceback")
-            traceback.print_exc()
+            print("[JupiterSwapper] Failed with an unexpected error: {e}")
+            # print(f"Type: {type(e)}")
+            # print(f"Args: {e.args}")
+            # print("Full traceback")
+            # traceback.print_exc()
+            return
 
 
     async def _get_mint_program_id(self, mint_address: Pubkey) -> Pubkey:

@@ -37,13 +37,13 @@ class DriveLogger:
         else:
             folder = self.drive.CreateFile({'title': FOLDER_NAME, 'mimeType': 'application/vnd.google-apps.folder'})
             folder.Upload()
-        # Sharing the FOLDER NAME (SolanaTraderLogs) To find on personal account
-        permission = {
-            "type": "user",
-            "value": os.getenv("PERSONAL_GMAIL"),
-            "role": "writer"
-        }
-        folder.InsertPermission(permission)
+            # Sharing the FOLDER NAME (SolanaTraderLogs) To find on personal account
+            permission = {
+                "type": "user",
+                "value": os.getenv("PERSONAL_GMAIL"),
+                "role": "writer"
+            }
+            folder.InsertPermission(permission)
         return folder['id']
 
     
@@ -70,7 +70,7 @@ class DriveLogger:
             new_file.Upload()
 
         else:
-            print("[DriveLogger] Appending to existing log {remote_filename}...")
+            print(f"[DriveLogger] Appending to existing log {remote_filename}...")
             existing = file_list[0]
             temp_existin_path = "temp_existing.csv"
             existing.GetContentFile(temp_existin_path)

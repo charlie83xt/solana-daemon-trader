@@ -1,5 +1,6 @@
 import os
 import asyncio
+import json
 from dotenv import load_dotenv
 # from solana_data_extractor_adjusted import SolanaDataExtractor
 from external_indicator_calculator import IndicatorCalculator
@@ -12,12 +13,15 @@ from agents.threshold_agent import ThresholdAgent
 from agents.agent_orchestrator import AgentOrchestrator
 from multi_token_trader import MultiTokenTrader
 import traceback
+from solders.keypair import Keypair
 
 
 class TraderOrchestrator:
     def __init__(self):
         load_dotenv(override=True)
 
+        key_json = json.loads(os.getenv("PRIVATE_KEY_JSON"))
+        self.keypair = Keypair.from_bytes(key_json)
         self.rpc_url = os.getenv("SOLANA_RPC_URL")
         self.max_position = float(os.getenv("MAX_POSITION_SIZE", 0.1))
         self.max_daily_loss = float(os.getenv("MAX_DAILY_LOSS", 1.0))
@@ -26,9 +30,8 @@ class TraderOrchestrator:
         # self.extractor = SolanaDataExtractor(self.rpc_url)
         self.indicator = IndicatorCalculator()
         self.ai_agent = AIAgentCaller()
-        self.executor = TransactionExecutor(self.rpc_url)
+        # self.executor = TransactionExecutor(self.rpc_url)
         self.risk = RiskManager(
-            max_daily_loss = self.max_daily_loss,
             cooldown_minutes = int(os.getenv("COOLDOWN_MINUTES", 10))
         )
         self.agent_ensemble = AgentOrchestrator([
@@ -52,7 +55,7 @@ class TraderOrchestrator:
 
             # 3) Get AI decision
             decision = await self.agent_ensemble.resolve_decision(indicators)
-            print(f"[Final Decision] {decision['action']} {decision['amount']} SOL @ confidence {decision['confidence'] * 100:.1f}%")
+            # print(f"[Final Decision] {decision['action']} {decision['amount']} SOL @ confidence {decision['confidence'] * 100:.1f}%")
 
             if not self.risk.approve_trade(decision, indicators):
                 print("[Orchestrator] RiskManager blocked this trade.")
@@ -65,12 +68,12 @@ class TraderOrchestrator:
             if action == 'BUY':
                 amount = min(self.max_position, decision['amount'])
                 print(f"[Orchestrator] Decided to BUY {amount} SOL")
-                self.executor.execute_trade('BUY', amount)
+                # self.executor.execute_trade('BUY', amount)
 
             elif action == 'SELL':
                 amount = min(self.max_position, decision['amount'])
                 print(f"[Orchestrator] Decided to SELL {amount} SOL")
-                self.executor.execute_trade('SELL', amount)
+                # self.executor.execute_trade('SELL', amount)
 
             else:
                 print("[Orchestrator] No action taken this cycle.")
