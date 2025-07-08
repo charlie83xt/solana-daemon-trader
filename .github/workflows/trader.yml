@@ -47,8 +47,8 @@ jobs:
           echo "BASE_DIR=./tmp" >> .env
           echo "AI_AGENT_TYPE='${{ secrets.AI_AGENT_TYPE }}'" >> .env
           echo "AI_AGENT_API_KEY='${{ secrets.AI_AGENT_API_KEY }}'" >> .env
-          echo "${{ secrets.GOOGLE_CLIENT_SECRETS_JSON_B64 }}" > client_secrets.json
-          echo "${{ secrets.GOOGLE_MYCREDS_TXT }}" > mycreds.txt
+          echo "${{ secrets.GOOGLE_CLIENT_SECRETS_JSON_B64 }}" | base64 --decode > client_secrets.json
+          echo "${{ secrets.GOOGLE_MYCREDS_TXT }}" | base64 --decode > mycreds.txt
 
 
       - name: Run trader
