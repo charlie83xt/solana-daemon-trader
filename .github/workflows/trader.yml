@@ -1,0 +1,57 @@
+
+name: Run Solana Trader
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # every 5 minutes
+  workflow_dispatch:  # manual run option
+
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+
+      - name: Install dependecies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+
+      - name: Configure Environment
+        run: |
+          mkdir -p tmp
+          echo "PRIVATE_KEY_JSON='${{ secrets.PRIVATE_KEY_JSON }}'" >> .env
+          echo "TRADING_ENABLED='${{ secrets.TRADING_ENABLED }}'" >> .env
+          echo "POLL_INTERVAL='${{ secrets.POLL_INTERVAL }}'" >> .env
+          echo "PERSONAL_GMAIL='${{ secrets.PERSONAL_GMAIL }}'" >> .env
+          echo "MAX_POSITION='${{ secrets.MAX_POSITION }}'" >> .env
+          echo "MAX_DAILY_LOSS='${{ secrets.MAX_DAILY_LOSS }}'" >> .env
+          echo "MAX_CONSECUTIVE_LOSSES='${{ secrets.MAX_CONSECUTIVE_LOSSES }}'" >> .env
+          echo "HELIUS_API_KEY='${{ secrets.HELIUS_API_KEY }}'" >> .env
+          echo "DRY_RUN='${{ secrets.DRY_RUN }}'" >> .env
+          echo "DATA_SOURCE='${{ secrets.DATA_SOURCE }}'" >> .env
+          echo "COOLDOWN_MINUTES='${{ secrets.COOLDOWN_MINUTES }}'" >> .env
+          echo "BASE_DIR=./tmp" >> .env
+          echo "AI_AGENT_TYPE='${{ secrets.AI_AGENT_TYPE }}'" >> .env
+          echo "AI_AGENT_API_KEY='${{ secrets.AI_AGENT_API_KEY }}'" >> .env
+          echo "${{ secrets.GOOGLE_CLIENT_SECRETS_JSON_B64 }}" > client_secrets.json
+          echo "${{ secrets.GOOGLE_MYCREDS_TXT }}" > mycreds.txt
+
+
+      - name: Run trader
+        run: |
+          source venv/bin/activate
+          python main.py

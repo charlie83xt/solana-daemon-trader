@@ -13,17 +13,27 @@ FOLDER_NAME = "SolanaTraderLogs"
 
 class DriveLogger:
     def __init__(self):
-        self.path_to_auth_file = "gdrive_service_account.json"
-        scope = ["https://www.googleapis.com/auth/drive"]
+        # self.path_to_auth_file = "gdrive_service_account.json"
+        # scope = ["https://www.googleapis.com/auth/drive"]
 
         self.gauth = GoogleAuth()
-        self.gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(
-            self.path_to_auth_file,
-            scope
-        )
+        self.gauth.LoadClientConfigFile("client_secrets.json")
+        # Load credentials from file if they exist
+        self.gauth.LoadCredentialsFile("mycreds.txt")
 
-        self.gauth.auth_method = 'service'
-        
+        if self.gauth.credentials is None:
+            self.gauth.LocalWebserverAuth()
+        elif self.gauth.access_token_expired:
+            self.gauth.Refresh()
+        else:
+            self.gauth.Authorize()
+
+        # self.gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(
+        #     self.path_to_auth_file,
+        #     scope
+        # )
+        self.gauth.SaveCredentialsFile("mycreds.txt")
+        # self.gauth.auth_method = 'service'     
         self.drive = GoogleDrive(self.gauth)
         self.folder_id = self._ensure_folder()
 
@@ -35,7 +45,9 @@ class DriveLogger:
         if file_list:
             folder = file_list[0]
         else:
-            folder = self.drive.CreateFile({'title': FOLDER_NAME, 'mimeType': 'application/vnd.google-apps.folder'})
+            folder = self.drive.CreateFile({
+                'title': FOLDER_NAME, 
+                'mimeType': 'application/vnd.google-apps.folder', 'parents': [{'id': '1yi25EyM3FzEBIxdgLuLU85tSfvgajNUA'}]})
             folder.Upload()
             # Sharing the FOLDER NAME (SolanaTraderLogs) To find on personal account
             permission = {

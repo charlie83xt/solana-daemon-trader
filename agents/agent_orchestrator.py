@@ -4,12 +4,13 @@ from datetime import datetime
 import os
 from log_router import LogRouter
 from performance_monitor import PerformanceMonitor
+from log_paths import VOTE_LOG
 
 
 class AgentOrchestrator:
-    def __init__(self, agents, vote_log="logs/agent_votes.csv"):
+    def __init__(self, agents, vote_log=None):
         self.agents = agents
-        self.vote_log = vote_log
+        self.vote_log = vote_log or VOTE_LOG
         self._ensure_vote_log()
         self.logger = LogRouter(use_drive=True)
 

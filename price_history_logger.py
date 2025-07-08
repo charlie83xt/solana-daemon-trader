@@ -3,13 +3,14 @@ import csv
 from datetime import datetime 
 from pycoingecko import CoinGeckoAPI
 from log_router import LogRouter
+from log_paths import PRICE_LOG
 
 class PriceHistoryLogger:
-    def __init__(self, token_id="solana", vs_currency="usd", log_file="logs/sol_price_history.csv"):
+    def __init__(self, token_id="solana", vs_currency="usd", log_file=None):
         self.cg = CoinGeckoAPI()
         self.token_id = token_id
         self.vs_currency = vs_currency
-        self.log_file = log_file
+        self.log_file = log_file or PRICE_LOG
         self._ensure_file()
         self.logger = LogRouter()
 

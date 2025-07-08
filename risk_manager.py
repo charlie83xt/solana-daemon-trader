@@ -4,12 +4,14 @@ from datetime import datetime, timedelta
 from log_router import LogRouter
 from gdrive_logger import DriveLogger
 import io
+from log_paths import TRADE_LOG
+
 
 class RiskManager:
-    def __init__(self, cooldown_minutes=10, log_file="logs/trade_log.csv"):
+    def __init__(self, cooldown_minutes=10, log_file=None):
         self.max_daily_loss = float(os.getenv("MAX_DAILY_LOSS", 0.3))
         self.cooldown_minutes = cooldown_minutes
-        self.log_file = log_file
+        self.log_file = log_file or TRADE_LOG
         self.logger = LogRouter(use_drive=True)
         self.drive = DriveLogger()
 
@@ -30,34 +32,31 @@ class RiskManager:
 
     def log_trade(self, action, amount, price, confidence, symbol='SOL', tx_sig='-', sentiment=None):
         now = datetime.utcnow().isoformat()
-        row = [now, action, amount, price, confidence, symbol, tx_sig, sentiment]
 
         pnl = ""
         return_pct = ""
         
         # For PnL: store BUYs and SELLs in matched pairs
-        if action == 'BUY':
-            row += ["", ""] # PnL and %return will be filled in after SELL
-        elif action == 'SELL':
+        if action == 'SELL':
             pnl_val, ret = self.calculate_trade_pnl(amount, price)
             pnl = round(pnl_val, 4)
-            row += [round(pnl_val, 4), round(ret, 4)]
-            if pnl_val < 0:
-                self.loss_streak += 1
-            else:
-                 self.loss_streak = 0
-        else:
-            row += ["", ""]
+            # row += [round(pnl_val, 4), round(ret, 4)]
+            return_pct = round(ret, 4)
+            self.loss_streak += 1 if pnl_val < 0 else 0
+        elif action == 'BUY':
+            self.loss_streak = 0 # reset streak on BUY
+        row = [now, action, amount, price, confidence, symbol, tx_sig, pnl, return_pct, sentiment]
 
         self._ensure_log_file()
 
-        with open(self.log_file, mode='a', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow([now, action, amount, price, confidence, symbol, tx_sig, pnl, return_pct, sentiment])
-            try:
-                self.logger.log_local_and_remote(self.log_file)
-            except Exception as e:
-                print(f"[DriveLogger] in RiskManager Failed to sync: {e}")
+        try:
+            with open(self.log_file, mode='a', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(row)
+            self.logger.log_local_and_remote(self.log_file)
+        except Exception as e:
+            print(f"[DriveLogger] in RiskManager Failed to sync: {e}")
+            
         self.last_trade_time = datetime.utcnow()
 
 

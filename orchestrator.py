@@ -78,7 +78,7 @@ class TraderOrchestrator:
             else:
                 print("[Orchestrator] No action taken this cycle.")
 
-            self.risk.log_trade(action, amount, indicators["price"], decision.get("confidence", 1.0))
+            self.risk.log_trade(action, amount, indicators["price"], decision.get("confidence", 1.0), indicators.get("symbol", 'SOL'), "-", None)
 
         except Exception as e:
             # print(f"[Orchestrator] Error during run_cycle().")

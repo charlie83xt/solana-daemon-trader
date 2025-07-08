@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from orchestrator import TraderOrchestrator
 from price_history_logger import PriceHistoryLogger
 from multi_token_trader import MultiTokenTrader
-# from real_market_data import RealMarketDataFetcher
+from price_multi_logger import PriceMultiLogger
+from token_performance import TokenPerformanceTracker
 # from external_indicator_calculator import IndicatorCalculator
 import traceback
 
@@ -24,7 +25,9 @@ async def main():
         orchestrator.keypair
     )
 
-    price_logger = PriceHistoryLogger()
+    performance_tracker = TokenPerformanceTracker()
+    top_symbols = performance_tracker.top_tokens_by_pnl()
+    price_logger = PriceMultiLogger(top_symbols)
 
     
     await orchestrator.run_cycle()
@@ -32,9 +35,10 @@ async def main():
     while True:
         try:
             print("\n--- [Cycle Start] ---")
-            price_logger.fetch_and_log()
-            await multitoken.evaluate_and_trade_top_tokens()
-            await orchestrator.run_cycle()
+            price_logger.fetch_and_log_all()
+            trade_executed = await multitoken.evaluate_and_trade_top_tokens()
+            if not trade_executed:
+                await orchestrator.run_cycle()
             print("--- [Cycle Complete] ---\n")
         except Exception as e:
             print(f"[Runner] Error during run_cycle: {e}")
