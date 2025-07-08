@@ -16,7 +16,7 @@ class DriveLogger:
         # self.path_to_auth_file = "gdrive_service_account.json"
         # scope = ["https://www.googleapis.com/auth/drive"]
 
-        self.gauth = GoogleAuth()
+        self.gauth = GoogleAuth(settings_file="settings.yaml")
         self.gauth.LoadClientConfigFile("client_secrets.json")
         # Load credentials from file if they exist
         self.gauth.LoadCredentialsFile("mycreds.txt")

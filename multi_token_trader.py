@@ -64,7 +64,7 @@ class MultiTokenTrader:
                 print(f"[MultiTokenTrader] Error evaluating {token['symbol']}: {e}")
 
         if best_token and self.risk.approve_trade(best_decision, best_indicators):
-            print(f"[MultiTokenTrader] Best decision {best_decision} for {best_token["symbol"]}")                
+            print(f"[MultiTokenTrader] Best decision {best_decision} for {best_token['symbol']}")                
             # self.execute_jupiter_swap(best_token, best_decision)
             tx_sig = await self.swapper.execute_swap(best_token, best_decision)
             self.risk.log_trade(
@@ -82,4 +82,4 @@ class MultiTokenTrader:
     
 
     def execute_jupiter_swap(self, token, decision):
-        print(f"[JupiterSwap] Simulating {decision["action"]} {decision["amount"]} of {token["symbol"]} (stub)")
+        print(f"[JupiterSwap] Simulating {decision['action']} {decision['amount']} of {token['symbol']} (stub)")

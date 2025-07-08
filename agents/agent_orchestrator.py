@@ -11,9 +11,9 @@ class AgentOrchestrator:
     def __init__(self, agents, vote_log=None):
         self.agents = agents
         self.vote_log = vote_log or VOTE_LOG
-        self._ensure_vote_log()
         self.logger = LogRouter(use_drive=True)
-
+        self._ensure_vote_log()
+        
         self.monitor = PerformanceMonitor()
     
     def _ensure_vote_log(self):
@@ -90,7 +90,7 @@ class AgentOrchestrator:
             "confidence": round(best_confidence, 4)
         }
 
-        print(f"[Final Decision] {best_action} {amount:.3f} {indicators.get("symbol", "SOL")} @ confidence {best_confidence * 100:.1f}%")
+        print(f"[Final Decision] {best_action} {amount:.3f} {indicators.get('symbol', 'SOL')} @ confidence {best_confidence * 100:.1f}%")
 
         return final_decision
     
