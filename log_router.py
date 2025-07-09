@@ -13,3 +13,8 @@ class LogRouter:
                 self.drive_logger.upload_or_append(local_csv_path=local_file_path, remote_filename=remote_filename)
             except Exception as e:
                 print(f"[LogRouter] Failed to sync to Google Drive: {e}")
+
+    def download_log(self, filename: str) -> str:
+        if self.drive_logger:
+            return self.drive_logger.download_file(filename)
+        return None
