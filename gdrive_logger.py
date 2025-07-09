@@ -15,28 +15,22 @@ class DriveLogger:
     def __init__(self):
         # self.path_to_auth_file = "gdrive_service_account.json"
         # scope = ["https://www.googleapis.com/auth/drive"]
-        print("[DriveLogger] Initializing...")
         try:
             self.gauth = GoogleAuth()
             self.gauth.LoadClientConfigFile("client_secrets.json")
             self.gauth.LoadCredentialsFile("mycreds.txt")
 
             if self.gauth.credentials is None:
-                print("[DriveLogger] No credentials, starting local web auth (this will hang on GitHub!)")
                 self.gauth.LocalWebserverAuth()
             elif self.gauth.access_token_expired:
-                print("[DriveLogger] Token expired. Refreshing...")
                 self.gauth.Refresh()
             else:
-                print("[DriveLogger] Authorizing...")
                 self.gauth.Authorize()
 
             self.gauth.SaveCredentialsFile("mycreds.txt")
             self.drive = GoogleDrive(self.gauth)
-            print("[DriveLogger] Initialization successful.")
         except Exception as e:
             import traceback
-            print("[DriveLogger] Initialization FAILED.")
             traceback.print_exc()
             raise SystemExit(1)
         self.folder_id = self._ensure_folder()

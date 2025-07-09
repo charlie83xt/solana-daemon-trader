@@ -1,19 +1,13 @@
-print(">>> Starting main.py")
-try:
-    import asyncio
-    import os
-    from dotenv import load_dotenv
-    from orchestrator import TraderOrchestrator
-    from price_history_logger import PriceHistoryLogger
-    from multi_token_trader import MultiTokenTrader
-    from price_multi_logger import PriceMultiLogger
-    from token_performance import TokenPerformanceTracker
-    # from external_indicator_calculator import IndicatorCalculator
-    import traceback
-    print(" Imports sucessful")
-except Exception as e:
-    print(">>> Import failed", e)
-print(">>> Environment loaded")
+import asyncio
+import os
+from dotenv import load_dotenv
+from orchestrator import TraderOrchestrator
+from price_history_logger import PriceHistoryLogger
+from multi_token_trader import MultiTokenTrader
+from price_multi_logger import PriceMultiLogger
+from token_performance import TokenPerformanceTracker
+# from external_indicator_calculator import IndicatorCalculator
+import traceback
 
 async def main():
     load_dotenv()
