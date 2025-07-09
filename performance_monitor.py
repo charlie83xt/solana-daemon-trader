@@ -22,16 +22,16 @@ class PerformanceMonitor:
             reader = csv.DictReader(csv_data.strip().splitlines())
             # with open(self.log_file, newline="") as f:
             #     reader = csv.DictReader(f)
-                for row in reader:
-                    if row.get("pnl"):
-                        try:
-                            trades.append({
-                                "pnl": float(row["pnl"]),
-                                "return_pct": float(row["return_pct"]),
-                                "confidence": float(row["confidence"])
-                            })
-                        except ValueError:
-                            continue
+            for row in reader:
+                if row.get("pnl"):
+                    try:
+                        trades.append({
+                            "pnl": float(row["pnl"]),
+                            "return_pct": float(row["return_pct"]),
+                            "confidence": float(row["confidence"])
+                        })
+                    except ValueError:
+                        continue
         except Exception as e:
             print(f"[PerformanceMonitor] Error reading log: {e}")
             return None
