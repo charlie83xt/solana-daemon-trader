@@ -15,26 +15,29 @@ class DriveLogger:
     def __init__(self):
         # self.path_to_auth_file = "gdrive_service_account.json"
         # scope = ["https://www.googleapis.com/auth/drive"]
+        try:
+            print("[DriveLogger] Initializing...")
+            self.gauth = GoogleAuth(settings_file="settings.yaml")
+            self.gauth.LoadClientConfigFile("client_secrets.json")
+            # Load credentials from file if they exist
+            self.gauth.LoadCredentialsFile("mycreds.txt")
 
-        self.gauth = GoogleAuth(settings_file="settings.yaml")
-        self.gauth.LoadClientConfigFile("client_secrets.json")
-        # Load credentials from file if they exist
-        self.gauth.LoadCredentialsFile("mycreds.txt")
+            if self.gauth.credentials is None:
+                self.gauth.LocalWebserverAuth()
+            elif self.gauth.access_token_expired:
+                self.gauth.Refresh()
+            else:
+                self.gauth.Authorize()
 
-        if self.gauth.credentials is None:
-            self.gauth.LocalWebserverAuth()
-        elif self.gauth.access_token_expired:
-            self.gauth.Refresh()
-        else:
-            self.gauth.Authorize()
-
-        # self.gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        #     self.path_to_auth_file,
-        #     scope
-        # )
-        self.gauth.SaveCredentialsFile("mycreds.txt")
-        # self.gauth.auth_method = 'service'     
-        self.drive = GoogleDrive(self.gauth)
+            self.gauth.SaveCredentialsFile("mycreds.txt")
+            # self.gauth.auth_method = 'service'     
+            self.drive = GoogleDrive(self.gauth)
+            print("[DriveLogger] Initialized sucessfully.")
+        except Exception as e:
+            import traceback
+            print("[DriveLogger] FAILED during init")
+            traceback.print_exc()
+            raise SystemExit(1)
         self.folder_id = self._ensure_folder()
 
 
