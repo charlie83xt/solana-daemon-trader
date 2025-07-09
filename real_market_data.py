@@ -1,4 +1,5 @@
 from pycoingecko import CoinGeckoAPI
+from cg_symbol_map import COINGECKO_IDS
 
 class RealMarketDataFetcher:
     def __init__(self):
@@ -52,7 +53,8 @@ class RealMarketDataFetcher:
 
     def fetch_currrent_price(self, symbol: str) -> float:
         try:
-            data = self.cg.get_price(ids=symbol.lower(), vs_currencies='usd')
+            cg_id = COINGECKO_IDS.get(symbol.upper(), symbol.lower())
+            data = self.cg.get_price(ids=cg_id, vs_currencies='usd')
             return float(data[symbol.lower()]['usd'])
         except Exception as e:
             print(f"[DataFetcher] Error fetching current price for {symbol}: {e}")
@@ -60,7 +62,8 @@ class RealMarketDataFetcher:
 
     def fetch_current_volume(self, symbol: str) -> float:
         try:
-            data = self.cg.get_coin_market_chart_by_id(id=symbol.lower(), vs_currencies='usd', days=1)
+            cg_id = COINGECKO_IDS.get(symbol.upper(), symbol.lower())
+            data = self.cg.get_coin_market_chart_by_id(id=cg_id, vs_currencies='usd', days=1)
             return float(data['total_volumes'][-1][1])
         except Exception as e:
             print(f"[DataFetcher] Error fetching volume for {symbol}: {e}")

@@ -3,6 +3,7 @@ __pycache__/
 *.py[codz]
 *$py.class
 temp_wallet_iden.py
+create_symbol_id.py
 
 # C extensions
 *.so

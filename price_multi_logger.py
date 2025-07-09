@@ -10,7 +10,7 @@ from real_market_data import RealMarketDataFetcher
 class PriceMultiLogger:
     def __init__(self, token_symbols):
         self.token_symbols = token_symbols
-        self. fetcher = RealMarketDataFetcher()
+        self.fetcher = RealMarketDataFetcher()
         self.logger = LogRouter()
 
     def fetch_and_log_all(self):
