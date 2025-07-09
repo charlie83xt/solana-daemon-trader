@@ -18,7 +18,7 @@ class TokenPerformanceTracker:
         pnl_by_token = defaultdict(list)
 
         try:
-            content = self.logger.download_log(self.log_file)
+            content = self.logger.download_log(self.log_path)
             if not content:
                 print("[TokenTracker] No trade_log found or empty.")
                 return []
