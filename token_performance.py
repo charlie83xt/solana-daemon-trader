@@ -2,12 +2,14 @@
 import csv
 from datetime import datetime, timedelta
 from collections import defaultdict
+from log_router import LogRouter
 
 
 class TokenPerformanceTracker:
     def __init__(self, log_path="logs/trade_log.csv", lookback_days=3):
         self.log_path = log_path
         self.lookback_days = lookback_days
+        self.logger = LogRouter(use_drive=True)
 
 
     def top_tokens_by_pnl(self, top_n=3):
@@ -16,22 +18,27 @@ class TokenPerformanceTracker:
         pnl_by_token = defaultdict(list)
 
         try:
-            with open(self.log_path, newline='') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    timestamp = datetime.fromisoformat(row["timestamp"])
-                    if timestamp < cutoff:
-                        continue
+            content = self.logger.download_log(self.log_file)
+            if not content:
+                print("[TokenTracker] No trade_log found or empty.")
+                return []
 
-                    symbol = row["symbol"]
-
+            reader = csv.DictReader(content.strip().splitlines())
+            # with open(self.log_path, newline='') as f:
+            #     reader = csv.DictReader(f)
+                for row in reader:  
                     try:
+                        timestamp = datetime.fromisoformat(row["timestamp"])
+                        if timestamp < cutoff:
+                            continue
+
+                        symbol = row.get("symbol", "UNKNOWN")
                         pnl = float(row.get("pnl", 0.0))
                         pnl_by_token[symbol].append(pnl)
-                    except:
+                    except Exception as e:
                         continue
-        except FileNotFoundError:
-            print("[TokenTracker] No trade_log.csv found.")
+        except Exception as e:
+            print(f"[TokenTracker] Error reading log: {e}")
             return []
 
         avg_pnl = {sym: sum(pnls)/len(pnls) for sym, pnls in pnl_by_token.items() if pnls}

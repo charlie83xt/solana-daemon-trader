@@ -1,18 +1,27 @@
 import csv
 from collections import deque
+from log_router import LogRouter
+
 
 class PerformanceMonitor:
     def __init__(self, log_file="logs/trade_log.csv", window=10):
         self.log_file = log_file
         self.window = window # Number of recent trades to evaluate
+        self.logger = LogRouter(use_drive=True)
 
 
     def evaluate(self):
         trades = deque(maxlen=self.window)
 
         try:
-            with open(self.log_file, newline="") as f:
-                reader = csv.DictReader(f)
+            csv_data = self.logger.download_log(self.log_file)
+            if not csv_data:
+                print(f"[PerformanceMonitor] No trade data available.")
+                return None
+            
+            reader = csv.DictReader(csv_data.strip().splitlines())
+            # with open(self.log_file, newline="") as f:
+            #     reader = csv.DictReader(f)
                 for row in reader:
                     if row.get("pnl"):
                         try:
