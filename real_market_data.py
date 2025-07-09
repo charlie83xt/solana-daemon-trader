@@ -51,7 +51,7 @@ class RealMarketDataFetcher:
         return rsi
 
 
-    def fetch_currrent_price(self, symbol: str) -> float:
+    def fetch_current_price(self, symbol: str) -> float:
         try:
             cg_id = COINGECKO_IDS.get(symbol.upper(), symbol.lower())
             data = self.cg.get_price(ids=cg_id, vs_currencies='usd')
