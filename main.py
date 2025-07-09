@@ -9,6 +9,13 @@ from token_performance import TokenPerformanceTracker
 # from external_indicator_calculator import IndicatorCalculator
 import traceback
 
+# Inject Google Drive credentials from environment into local files
+with open("client_secrets.json", "w") as f:
+    f.write(os.getenv("GOOGLE_CLIENT_SECRETS_JSON", ""))
+
+with open("mycreds.txt", "w") as f:
+    f.write(os.getenv("GOOGLE_MYCREDS_TXT", ""))
+
 async def main():
     load_dotenv()
     interval = int(os.getenv("POLL_INTERVAL", 300)) # run every 5 mins
