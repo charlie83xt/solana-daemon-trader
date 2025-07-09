@@ -35,6 +35,7 @@ jobs:
           mkdir -p tmp
           echo "PRIVATE_KEY_JSON='${{ secrets.PRIVATE_KEY_JSON }}'" >> .env
           echo "TRADING_ENABLED='${{ secrets.TRADING_ENABLED }}'" >> .env
+          echo "SOLANA_RPC_URL='${{ secrets.SOLANA_RPC_URL }}'" >> .env
           echo "POLL_INTERVAL='${{ secrets.POLL_INTERVAL }}'" >> .env
           echo "PERSONAL_GMAIL='${{ secrets.PERSONAL_GMAIL }}'" >> .env
           echo "MAX_POSITION='${{ secrets.MAX_POSITION }}'" >> .env
