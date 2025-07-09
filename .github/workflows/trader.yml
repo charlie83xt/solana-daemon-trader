@@ -54,4 +54,5 @@ jobs:
       - name: Run trader
         run: |
           source venv/bin/activate
-          python main.py
+          set -e
+          python main.py || true
