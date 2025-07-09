@@ -26,17 +26,17 @@ class TokenPerformanceTracker:
             reader = csv.DictReader(content.strip().splitlines())
             # with open(self.log_path, newline='') as f:
             #     reader = csv.DictReader(f)
-                for row in reader:  
-                    try:
-                        timestamp = datetime.fromisoformat(row["timestamp"])
-                        if timestamp < cutoff:
-                            continue
-
-                        symbol = row.get("symbol", "UNKNOWN")
-                        pnl = float(row.get("pnl", 0.0))
-                        pnl_by_token[symbol].append(pnl)
-                    except Exception as e:
+            for row in reader:  
+                try:
+                    timestamp = datetime.fromisoformat(row["timestamp"])
+                    if timestamp < cutoff:
                         continue
+
+                    symbol = row.get("symbol", "UNKNOWN")
+                    pnl = float(row.get("pnl", 0.0))
+                    pnl_by_token[symbol].append(pnl)
+                except Exception as e:
+                    continue
         except Exception as e:
             print(f"[TokenTracker] Error reading log: {e}")
             return []
