@@ -24,6 +24,11 @@ async def main():
 
     # market_fetcher = RealMarketDataFetcher()
     orchestrator = TraderOrchestrator()
+
+    performance_tracker = TokenPerformanceTracker()
+    top_symbols = performance_tracker.top_tokens_by_pnl()
+    price_logger = PriceMultiLogger(top_symbols)
+
     multitoken = MultiTokenTrader(
         orchestrator.market_fetcher,
         orchestrator.indicator,
@@ -31,10 +36,6 @@ async def main():
         orchestrator.risk,
         orchestrator.keypair
     )
-
-    performance_tracker = TokenPerformanceTracker()
-    top_symbols = performance_tracker.top_tokens_by_pnl()
-    price_logger = PriceMultiLogger(top_symbols)
 
     
     await orchestrator.run_cycle()
