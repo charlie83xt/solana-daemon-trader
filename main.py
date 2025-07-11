@@ -36,7 +36,6 @@ async def main():
         orchestrator.risk,
         orchestrator.keypair
     )
-
     
     await orchestrator.run_cycle()
 
