@@ -5,6 +5,10 @@ from jupiter_swapper import JupiterSwapper
 from gdrive_logger import DriveLogger
 from token_performance import TokenPerformanceTracker
 from sentiment_fetcher import SentimentSignalFetcher
+from log_paths import get_log_path
+from real_market_data import RealMarketDataFetcher
+from log_router import LogRouter
+
 
 class MultiTokenTrader:
     def __init__(self, market_fetcher, indicator, agent_ensemble, risk, keypair): #Before: (self, market_fetcher, indicator, agent_ensemble, risk, executor)
@@ -17,6 +21,8 @@ class MultiTokenTrader:
 
         self.performance_tracker = TokenPerformanceTracker()
         self.signal_fetcher = SentimentSignalFetcher()
+        self.logger = LogRouter(use_drive = True)
+
     
     async def evaluate_and_trade_top_tokens(self):
         tokens = fetch_top_tokens(limit=10)
@@ -27,14 +33,11 @@ class MultiTokenTrader:
 
         preferred_symbols = self.performance_tracker.top_tokens_by_pnl()
         tokens = [t for t in tokens if t["symbol"] in preferred_symbols]
-
-
         print(f"[MultiTokenTrader] Selected top tokens: {preferred_symbols}")
 
         best_decision = {"confidence": 0.0}
         best_token = None
         best_indicators = None
-
         self.signal_fetcher.cache_volumes(tokens)
 
         for token in tokens:
@@ -66,7 +69,11 @@ class MultiTokenTrader:
         if best_token and self.risk.approve_trade(best_decision, best_indicators):
             print(f"[MultiTokenTrader] Best decision {best_decision} for {best_token['symbol']}")                
             # self.execute_jupiter_swap(best_token, best_decision)
-            tx_sig = await self.swapper.execute_swap(best_token, best_decision)
+            try:
+                tx_sig = await self.swapper.execute_swap(best_token, best_decision)
+            except Exception as e:
+                print(f"[MultiTokenTrader] Swap failed: {e}")
+                tx_sig = "-"
             self.risk.log_trade(
                 best_decision["action"],
                 best_decision["amount"],
@@ -76,7 +83,10 @@ class MultiTokenTrader:
                 tx_sig,
                 combined
             )
-            DriveLogger().upload_or_append("logs/trade_log.csv")
+            try:
+                DriveLogger().upload_or_append("logs/trade_log.csv")
+            except Exception as e:
+                print(f"[MultiTokenTrader] Failed to upload trade log: {e}")
         else:
             print(f"[MultiTokenTrader] Not valid trade executed.")
     

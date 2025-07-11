@@ -127,7 +127,7 @@ class JupiterSwapper:
             return result.value
 
         except Exception as e:
-            print("[JupiterSwapper] Failed with an unexpected error: {e}")
+            print(f"[JupiterSwapper] Failed with an unexpected error: {e}")
             # print(f"Type: {type(e)}")
             # print(f"Args: {e.args}")
             # print("Full traceback")

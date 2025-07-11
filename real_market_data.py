@@ -7,7 +7,8 @@ class RealMarketDataFetcher:
 
     def fetch_price_history(self, days=3) -> list:
         try:
-            data = self.cg.get_coin_market_chart_by_id(id='solana', vs_currency='usd', days=days)
+            cg_id = COINGECKO_IDS.get(symbol.upper(), symbol.lower())
+            data = self.cg.get_coin_market_chart_by_id(id=cg_id, vs_currency='usd', days=days)
             prices = [point[1] for point in data['prices']]
             return prices
         except Exception as e:
@@ -52,6 +53,7 @@ class RealMarketDataFetcher:
 
 
     def fetch_current_price(self, symbol: str) -> float:
+        
         try:
             cg_id = COINGECKO_IDS.get(symbol.upper())
             if not cg_id:
