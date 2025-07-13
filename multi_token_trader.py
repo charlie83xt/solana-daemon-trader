@@ -66,19 +66,24 @@ class MultiTokenTrader:
             except Exception as e:
                 print(f"[MultiTokenTrader] Error evaluating {token['symbol']}: {e}")
 
-        if best_token and self.risk.approve_trade(best_decision, best_indicators):
-            print(f"[MultiTokenTrader] Best decision {best_decision} for {best_token['symbol']}")                
-            # self.execute_jupiter_swap(best_token, best_decision)
-            tx_sig = "-"
-            if best_decision["action"] in ["BUY", "SELL"]:
-                try:
-                    tx_sig = await self.swapper.execute_swap(best_token, best_decision)
-                except Exception as e:
-                    print(f"[MultiTokenTrader] Swap failed: {e}")
-                    tx_sig = "-"
+        if best_token:
+            print(f"[MultiTokenTrader] Best decision {best_decision} for {best_token['symbol']}")
+            approved = self.risk.approve_trade(best_decision, best_indicators)
+            print(f"[MultiTokenTrader] RiskManager approval result: {approved}")
+            if approved:  
+                # self.execute_jupiter_swap(best_token, best_decision)
+                tx_sig = "-"
+                if best_decision["action"] in ["BUY", "SELL"]:
+                    try:
+                        tx_sig = await self.swapper.execute_swap(best_token, best_decision)
+                    except Exception as e:
+                        print(f"[MultiTokenTrader] Swap failed: {e}")
+                        tx_sig = "-"
+                else:
+                    print(f"[MultiTokenTrader] Action was HOLD - skipping execution.")
             else:
-                print(f"[MultiTokenTrader] Action was HOLD - skipping execution.")
-                
+                print(f"[MultiTokenTrader] RiskManager rejected trade")
+
             self.risk.log_trade(
                 best_decision["action"],
                 best_decision["amount"],
