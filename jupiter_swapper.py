@@ -35,12 +35,8 @@ class JupiterSwapper:
         if self.api_key:
             self.headers["Authorization"] = f"Bearer {self.api_key}"
 
+
     async def execute_swap(self, token, decision):
-        print(f"[JupyterSwapper] exercuting swap for {decision['amount']} of {token['symbol']}")
-        return f"MOCK-TX-{int(time.time())}"
-
-
-    async def test_execute_swap(self, token, decision):
         symbol = token['symbol']
         if decision['action'] != 'BUY':
             print(f"[JupyterSwapper] Skipping non-BUY action for {symbol}")

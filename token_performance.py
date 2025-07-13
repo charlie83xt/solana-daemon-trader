@@ -3,7 +3,7 @@ import csv
 from datetime import datetime, timedelta
 from collections import defaultdict
 from log_router import LogRouter
-
+from token_scanner import fetch_top_tokens
 
 class TokenPerformanceTracker:
     def __init__(self, log_path="logs/trade_log.csv", lookback_days=3):
@@ -21,7 +21,8 @@ class TokenPerformanceTracker:
             content = self.logger.download_log(self.log_path)
             if not content:
                 print("[TokenTracker] No trade_log found or empty.")
-                return []
+                fallback = [t['symbol'] for t in fetch_top_tokens(limit=3)]
+                return fallback
 
             reader = csv.DictReader(content.strip().splitlines())
             # with open(self.log_path, newline='') as f:
