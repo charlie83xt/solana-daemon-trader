@@ -36,7 +36,7 @@ class JupiterSwapper:
             self.headers["Authorization"] = f"Bearer {self.api_key}"
 
     async def execute_swap(self, token, decision):
-        print(f"[JupyterSwapper] exercuting swap for {decision["amount"]} of {token["symbol"]}")
+        print(f"[JupyterSwapper] exercuting swap for {decision['amount']} of {token['symbol']}")
         return f"MOCK-TX-{int(time.time())}"
 
 
