@@ -20,6 +20,10 @@ class SentimentSignalFetcher:
         vol = self.volume_map.get(symbol, 0)
         # Normalize volume to 0-1 (relative popularity)
         top_vol = max(self.volume_map.values(), default=1)
+
+        if top_vol == 0:
+            return 0.0
+            
         return min(vol / top_vol, 1.0)
 
 

@@ -6,6 +6,10 @@ import asyncio
 
 class IndicatorCalculator:
     def compute_indicators(self, price_list: list) -> dict:
+        if not price_list or len(price_list) < 50:
+            print(f"[IndicatorCalculator] not enough price data to compute indicators")
+            return None
+
         df = pd.DataFrame(price_list, columns=["close"])
 
         # Simple moving averages
@@ -18,6 +22,10 @@ class IndicatorCalculator:
         # MACD
         macd = ta.macd(df["close"])
         df = pd.concat([df, macd], axis=1)
+
+        if df.empty or df.isna().all().all():
+            print(f"[IndicatorCalculator] Computed DataFrame is empty or NaN")
+            return {}
 
         # Get latest values
         latest = df.iloc[-1]

@@ -8,6 +8,9 @@ class ThresholdAgent(BaseAgent):
 
     
     async def get_decision(self, indicators):
+        if not indicators or len(indicators) < 4:
+            print(f"[{self.__class__.__name__}] Insufficient indicators. Returning HOLD.")
+            return {"action": "HOLD", "amount": 0.0, "confidence": 0.0}
         rsi = indicators.get("rsi", 50)
         macd = indicators.get("macd", 0)
         macd_signal = indicators.get("macd_signal", 0)

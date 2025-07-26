@@ -54,8 +54,12 @@ class JupiterSwapper:
                 user_pubkey,
                 token_tags=token.get("tags")
             )
+            
+            if decision['amount'] <= 0:
+                print(f"[JupyterSwapper] Invalid swap amount {decision['amount']} for {symbol}. Skipping")
 
             quote_url = "https://lite-api.jup.ag/swap/v1/quote" #Before: quote_url = "https://quote-api.jup.ag/v6/quote"
+            
             params = {
                 "inputMint": 'So11111111111111111111111111111111111111112',
                 "outputMint": token["address"],
@@ -73,7 +77,7 @@ class JupiterSwapper:
                 print(f"[JupyterSwapper] No valid swap routes. Response:\n{quote}")
                 return
 
-            # route = quote["routes"][0]
+            
             route = {
                 "routePlan": quote["routePlan"],
                 "inputMint": quote["inputMint"],
@@ -85,7 +89,7 @@ class JupiterSwapper:
                 "slippageBps": quote["slippageBps"],
                 "platformFee": quote["platformFee"],
             }
-            # print(quote)
+            
             swap_url = "https://lite-api.jup.ag/swap/v1/swap" # Before: swap_url = "https://quote-api.jup.ag/v6/swap"
             swap_req = {
                 "quoteResponse": quote,

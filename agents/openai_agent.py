@@ -12,13 +12,24 @@ class OpenAIAgent(BaseAgent):
 
     
     async def get_decision(self, indicators):
+        if not indicators or len(indicators) < 4:
+            print(f"[{self.__class__.__name__}] Insufficient indicators. Returning HOLD.")
+            return {"action": "HOLD", "amount": 0.0, "confidence": 0.0}
+            
         prompt = f"""
         You are a Solana crypto trading agent.
 
-        Respond ONLY with a JSON object in the following format and nothing else: 
+        You must output ONLY a JSON object like: 
         {{"action": "BUY", "amount": 0.05, "confidence": 0.92}}
 
-        Do not explain your answer. Do not include any text or formatting.
+        Use this logic:
+        - BUY if price is rising, MACD is positive, RSI is below 70, and SMA20 > SMA50
+        - SELL if RSI > 70, MACD is negative, or price is dropping, and SMA20 < SMA50
+        - HOLD in all other cases
+
+        Use confidence between 0.5 (low) and 1.0 (high), based on how strong the indicators are.
+
+        Only output the JSON. Do not explain your answer. Do not include any text or formatting.
 
         Indicators:
         Price: {indicators["price"]}

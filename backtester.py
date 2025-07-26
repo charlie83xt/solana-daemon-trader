@@ -1,16 +1,38 @@
 import pandas as pd
 import asyncio
 from external_indicator_calculator import IndicatorCalculator
+from agents.rule_based_agent import RuleBasedAgent
+from agents.threshold_agent import ThresholdAgent
 from agents.agent_orchestrator import AgentOrchestrator
 from datetime import datetime
+import sqlite3
+from db import get_connection
 
 class Backtester:
-    def __init__(self, price_csv_path):
-        self.df = pd.read_csv(price_csv_path)
+    def __init__(self, db_path, symbol="SOL"):
+        self.symbol = symbol
         self.indicator_calc = IndicatorCalculator()
-        self.agent_ensemble = AgentOrchestrator()
+        self.agent_ensemble = AgentOrchestrator([
+            RuleBasedAgent(),
+            ThresholdAgent()
+        ])
         self.trade_log = []
+        self.db_path = db_path
+        self.df = self._load_price_data()
 
+    def _load_price_data(self):
+        # conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
+        query = f"""
+            SELECT timestamp, price AS close
+            FROM price_history
+            WHERE symbol = ?
+            ORDER BY timestamp ASC
+        """
+
+        df = pd.read_sql_query(query, conn, params=(self.symbol.upper(),))
+        conn.close()
+        return df
 
     def compute_all_indicators(self):
         prices = self.df["close"].tolist()
@@ -35,18 +57,18 @@ class Backtester:
 
             decision = await self.agent_ensemble.resolve_decision(indicators)
 
-            if decision["action"] == "HOLD":
-                self.trade_log.append({
-                    "timestamp": self.df.iloc[i]["timestamp"],
-                    "price": row["close"],
-                    "action": decision["action"],
-                    "confidence": decision["confidence"]
-                })
+            # if decision["action"] == "HOLD":
+            self.trade_log.append({
+                "timestamp": row["timestamp"],
+                "price": row["close"],
+                "action": decision["action"],
+                "confidence": decision["confidence"]
+            })
 
     def summary(self):
         if not self.trade_log:
             print("No trades were made.")
-        return
+            return
 
         df = pd.DataFrame(self.trade_log)
         print("\n📊 Trades Summary:")
@@ -55,7 +77,7 @@ class Backtester:
 
 
 async def run_backtest():
-    tester = Backtest("data/sol_usd_hourly.csv")
+    tester = Backtester("trading.db", symbol="SOL")
     tester.compute_all_indicators()
     await tester.simulate_trades()
     tester.summary()

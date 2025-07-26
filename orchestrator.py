@@ -9,6 +9,7 @@ from risk_manager import RiskManager
 from executor import TransactionExecutor
 from real_market_data import RealMarketDataFetcher
 from agents.openai_agent import OpenAIAgent
+from agents.rule_based_agent import RuleBasedAgent
 from agents.threshold_agent import ThresholdAgent
 from agents.agent_orchestrator import AgentOrchestrator
 from multi_token_trader import MultiTokenTrader
@@ -22,71 +23,89 @@ class TraderOrchestrator:
 
         key_json = json.loads(os.getenv("PRIVATE_KEY_JSON"))
         self.keypair = Keypair.from_bytes(key_json)
+
         self.rpc_url = os.getenv("SOLANA_RPC_URL")
         self.max_position = float(os.getenv("MAX_POSITION_SIZE", 0.1))
         self.max_daily_loss = float(os.getenv("MAX_DAILY_LOSS", 1.0))
+
         self.market_fetcher = RealMarketDataFetcher()
-        
-        # self.extractor = SolanaDataExtractor(self.rpc_url)
         self.indicator = IndicatorCalculator()
         self.ai_agent = AIAgentCaller()
-        # self.executor = TransactionExecutor(self.rpc_url)
+        
         self.risk = RiskManager(
             cooldown_minutes = int(os.getenv("COOLDOWN_MINUTES", 10))
         )
+
         self.agent_ensemble = AgentOrchestrator([
-            OpenAIAgent(),
-            ThresholdAgent()
+            # OpenAIAgent(),
+            ThresholdAgent(),
             # More agents can be added here later
+            RuleBasedAgent()
         ])
 
     async def run_cycle(self):
         try:
             # 1) Get price history
-            # raw_data = self.market_fetcher.cg.get_coin_market_chart_by_id(id='solana', vs_currency='usd', days='2')
-            # price_list = [point[1] for point in raw_data['prices']]
-            price_list = self.market_fetcher.fetch_price_history()
-
+            price_list = self.market_fetcher.fetch_price_history("SOL")
             # 2) Compute indicators
+            if not price_list or len(price_list) < 50:
+                print("[Orchestrator] Insufficient price history for SOL. Skipping cycle.")
+                return False
+
             indicators = self.indicator.compute_indicators(price_list)
             if not indicators:
                 print("[Orchestrator] Marklet data unavailable. Skipping cycle.")
-                return
+                return False
 
             # 3) Get AI decision
             decision = await self.agent_ensemble.resolve_decision(indicators)
+            if decision["action"] == "HOLD":
+                print(f"[Orchestrator] All agents voted HOLD or lacked confidence.")
+            # decision = {
+            #     "action": "SELL",
+            #     "amount": 0.05,
+            #     "confidence": 0.95
+            # }
             # print(f"[Final Decision] {decision['action']} {decision['amount']} SOL @ confidence {decision['confidence'] * 100:.1f}%")
 
             if not self.risk.approve_trade(decision, indicators):
                 print("[Orchestrator] RiskManager blocked this trade.")
-                return
+                return False
 
             # 4) Act on decision
             action = decision.get('action', 'HOLD')
             amount = float(decision.get('amount', 0))
 
             if action == 'BUY':
-                amount = min(self.max_position, decision['amount'])
+                amount = min(self.max_position, amount)
                 print(f"[Orchestrator] Decided to BUY {amount} SOL")
                 # self.executor.execute_trade('BUY', amount)
 
             elif action == 'SELL':
-                amount = min(self.max_position, decision['amount'])
+                amount = min(self.max_position, amount)
                 print(f"[Orchestrator] Decided to SELL {amount} SOL")
                 # self.executor.execute_trade('SELL', amount)
 
             else:
                 print("[Orchestrator] No action taken this cycle.")
 
-            self.risk.log_trade(action, amount, indicators["price"], decision.get("confidence", 1.0), indicators.get("symbol", 'SOL'), "-", None)
+            self.risk.log_trade(
+                action, 
+                amount, 
+                indicators["price"], 
+                decision.get("confidence", 1.0), 
+                indicators.get("symbol", 'SOL'), 
+                "-", 
+                None
+            )
 
         except Exception as e:
-            # print(f"[Orchestrator] Error during run_cycle().")
-            # print(f"Type: {type(e)}")
-            # print(f"Args: {e.args}")
-            # print(f"Full traceback:")
-            # traceback.print_exc()
             print(f"[Orchestrator] Error during run_cycle: {e}")
+            print(f"[Runner] Error during run_cycle().")
+            print(f"Type: {type(e)}")
+            print(f"Args: {e.args}")
+            print(f"Full traceback:")
+            traceback.print_exc()
 
 
 # async def main():

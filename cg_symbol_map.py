@@ -98,5 +98,9 @@ COINGECKO_IDS = {
   "PC0000031": "tradable-na-rent-financing-platform-sstn", 
   "ROSE": "oasis-network", 
   "USDA": "usda-2", 
-  "WEMIX": "wemix-token", 
+  "WEMIX": "wemix-token",
+  "PYUSD": "paypal-usd",
+  "WIF": "dogwifcoin",
+  "BONK": "bonk",
+  "JUP": "jupiter-exchange-solana"
 }

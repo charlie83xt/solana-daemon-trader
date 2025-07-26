@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 temp_wallet_iden.py
 create_symbol_id.py
+tmp
+sdist
+ss 
 
 # C extensions
 *.so
