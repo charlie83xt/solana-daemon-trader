@@ -41,7 +41,7 @@ class PriceMultiLogger:
                 #     writer = csv.writer(f)
                 #     writer.writerow([timestamp, price, volume])
 
-                print(f"[PriceLogger] {timestamp} - {symbol}: Price={price}, Volume={volume}")
+                # print(f"[PriceLogger] {timestamp} - {symbol}: Price={price}, Volume={volume}")
                 # self.logger.log_local_and_remote(log_file)
 
             except Exception as e:

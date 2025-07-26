@@ -41,7 +41,7 @@ class PriceHistoryLogger:
                 latest_vol
             )
 
-            print(f"[PriceLogger] {now} - Price: {latest_price}, Volume: {latest_vol}")
+            # print(f"[PriceLogger] {now} - Price: {latest_price}, Volume: {latest_vol}")
             # self.logger.log_local_and_remote(self.log_file)
             return latest_price, latest_vol
 

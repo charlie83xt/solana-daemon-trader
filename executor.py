@@ -21,11 +21,11 @@ class TransactionExecutor:
         # For demo, we'll just transfer SOL to a dummy address
         # Replace this with actual DEX trade calls later
         if not self.trading_enabled:
-            print(f"[Executor] Trading is disabled via config. Skipping execution.")
+            # print(f"[Executor] Trading is disabled via config. Skipping execution.")
             return
 
         if self.dry_run:
-            print(f"[Executor] DRY_RUN enabled -- Simulating {action} of {amount} SOL.")
+            # print(f"[Executor] DRY_RUN enabled -- Simulating {action} of {amount} SOL.")
             return
 
         # Dummy trade execution logic.

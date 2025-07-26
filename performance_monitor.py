@@ -39,7 +39,7 @@ class PerformanceMonitor:
                     continue
 
             if not trades:
-                print(f"[PerformanceMonitor] Not recent trades found.")
+                # print(f"[PerformanceMonitor] Not recent trades found.")
                 return None
 
             avg_pnl = sum(float(t["pnl"]) for t in trades) / len(trades)

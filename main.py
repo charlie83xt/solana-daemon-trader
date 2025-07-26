@@ -27,7 +27,7 @@ async def main():
     load_dotenv()
     interval = int(os.getenv("POLL_INTERVAL", 300)) # run every 5 mins
 
-    print(f"[Runner] Starting trader loop every {interval} seconds...")
+    # print(f"[Runner] Starting trader loop every {interval} seconds...")
 
     # market_fetcher = RealMarketDataFetcher()
     orchestrator = TraderOrchestrator()
@@ -35,7 +35,7 @@ async def main():
     performance_tracker = TokenPerformanceTracker(db_path="trading.db")
     top_symbols = performance_tracker.top_tokens_by_pnl()
     if not top_symbols:
-        print(f"[Main] Nop tokens found. Using default fallback ['SOL']")
+        # print(f"[Main] Nop tokens found. Using default fallback ['SOL']")
         top_symbols = ['SOL']
 
     price_logger = PriceMultiLogger(top_symbols)

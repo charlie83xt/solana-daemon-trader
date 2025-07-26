@@ -49,7 +49,7 @@ class AgentOrchestrator:
 
     async def resolve_decision(self, indicators) -> dict:
         # self._ensure_vote_log()
-        print(f"[AgentOrchestrator] Indicators received: {indicators}")
+        # print(f"[AgentOrchestrator] Indicators received: {indicators}")
         votes = []
 
         for agent in self.agents:
@@ -70,17 +70,17 @@ class AgentOrchestrator:
 
         valid_votes = [v for _, v in votes if v.get("action") in ("BUY", "SELL") and v.get("confidence", 0) > 0]
         if not valid_votes:
-            print(f"[AgentOrchestrator] Not valid BUY/SELL agent votes with confidence.")
+            # print(f"[AgentOrchestrator] Not valid BUY/SELL agent votes with confidence.")
             return {"action": "HOLD", "amount": 0.0, "confidence": 0.0}
 
         if not votes:
-            print(f"[AgentOrchestrator] Not valid agent votes.")
+            # print(f"[AgentOrchestrator] Not valid agent votes.")
             return {"action": "HOLD", "amount": 0.0, "confidence": 0.0}
 
         # Evaluate past performance and adapt threshold
         performance = self.monitor.evaluate()
         if performance:
-            print(f"[PerformanceMonitor] Recent stats: {performance}")
+            # print(f"[PerformanceMonitor] Recent stats: {performance}")
             for agent in self.agents:
                 if agent.__class__.__name__ == "ThresholdAgent":
                     old_threshold = getattr(agent, "conf_threshold", None)
@@ -92,7 +92,7 @@ class AgentOrchestrator:
                     # else:
                     #     agent.conf_threshold = 0.6
                     if old_threshold != agent.conf_threshold:
-                        print(f"[PerformanceMonitor] Threshold adjusted from {old_threshold} to {agent.conf_threshold}")
+                        # print(f"[PerformanceMonitor] Threshold adjusted from {old_threshold} to {agent.conf_threshold}")
 
         # Group by decisions by action type
         grouped = defaultdict(list)
@@ -134,7 +134,7 @@ class AgentOrchestrator:
             "confidence": round(best_confidence, 4)
         }
 
-        print(f"[Final Decision] {best_action} {amount:.3f} {indicators.get('symbol', 'SOL')} @ confidence {best_confidence * 100:.1f}%")
+        # print(f"[Final Decision] {best_action} {amount:.3f} {indicators.get('symbol', 'SOL')} @ confidence {best_confidence * 100:.1f}%")
 
         return final_decision
     

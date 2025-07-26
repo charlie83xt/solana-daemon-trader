@@ -49,12 +49,12 @@ class TraderOrchestrator:
             price_list = self.market_fetcher.fetch_price_history("SOL")
             # 2) Compute indicators
             if not price_list or len(price_list) < 50:
-                print("[Orchestrator] Insufficient price history for SOL. Skipping cycle.")
+                # print("[Orchestrator] Insufficient price history for SOL. Skipping cycle.")
                 return False
 
             indicators = self.indicator.compute_indicators(price_list)
             if not indicators:
-                print("[Orchestrator] Marklet data unavailable. Skipping cycle.")
+                # print("[Orchestrator] Marklet data unavailable. Skipping cycle.")
                 return False
 
             # 3) Get AI decision
@@ -69,7 +69,7 @@ class TraderOrchestrator:
             # print(f"[Final Decision] {decision['action']} {decision['amount']} SOL @ confidence {decision['confidence'] * 100:.1f}%")
 
             if not self.risk.approve_trade(decision, indicators):
-                print("[Orchestrator] RiskManager blocked this trade.")
+                # print("[Orchestrator] RiskManager blocked this trade.")
                 return False
 
             # 4) Act on decision
@@ -78,12 +78,12 @@ class TraderOrchestrator:
 
             if action == 'BUY':
                 amount = min(self.max_position, amount)
-                print(f"[Orchestrator] Decided to BUY {amount} SOL")
+                # print(f"[Orchestrator] Decided to BUY {amount} SOL")
                 # self.executor.execute_trade('BUY', amount)
 
             elif action == 'SELL':
                 amount = min(self.max_position, amount)
-                print(f"[Orchestrator] Decided to SELL {amount} SOL")
+                # print(f"[Orchestrator] Decided to SELL {amount} SOL")
                 # self.executor.execute_trade('SELL', amount)
 
             else:

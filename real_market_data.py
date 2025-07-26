@@ -70,19 +70,19 @@ class RealMarketDataFetcher:
         try:
             cg_id = COINGECKO_IDS.get(symbol.upper())
             if not cg_id:
-                print(f"[DataFetcher] Unknown coingecko ID for symbol {symbol}")
+                # print(f"[DataFetcher] Unknown coingecko ID for symbol {symbol}")
                 return 0.0
             data = self.cg.get_price(ids=cg_id, vs_currencies='usd')
             return float(data[cg_id]['usd'])
         except Exception as e:
-            print(f"[DataFetcher] Error fetching current price for {symbol}: {e}")
+            # print(f"[DataFetcher] Error fetching current price for {symbol}: {e}")
             return 0.0
 
     def fetch_current_volume(self, symbol: str) -> float:
         try:
             cg_id = COINGECKO_IDS.get(symbol.upper())
             if not cg_id:
-                print(f"[DataFetcher] Unknown coingecko ID for symbol {symbol}")
+                # print(f"[DataFetcher] Unknown coingecko ID for symbol {symbol}")
                 return 0.0
             data = self.cg.get_coin_market_chart_by_id(id=cg_id, vs_currency='usd', days=1)
             return float(data['total_volumes'][-1][1])

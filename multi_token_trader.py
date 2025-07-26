@@ -25,10 +25,10 @@ class MultiTokenTrader:
 
     async def evaluate_token(self, token):
         symbol = token["symbol"]
-        print(f"[MultiTokenTrader] Evaluating {symbol}...")
+        # print(f"[MultiTokenTrader] Evaluating {symbol}...")
 
         price_data = self.market_fetcher.fetch_price_history(symbol)
-        if not price_data or len(price_data) < 50:
+        if not price_data or len(price_data) < 30:
             print(f"[MultiTokenTrader] Skipping {symbol} due to limited price history.")
 
         indicators = self.indicator.compute_indicators(price_data)
@@ -54,25 +54,25 @@ class MultiTokenTrader:
         decision["confidence"] *= (1 + combined)
         decision["confidence"] = max(decision["confidence"], 0.01)
 
-        print(f"[MultiTokenTrader] Sentiment-adjusted confidence for {symbol}: {decision['confidence']:.2f} (was {old_conf:.2f}, combined={combined:.2f})")
+        # print(f"[MultiTokenTrader] Sentiment-adjusted confidence for {symbol}: {decision['confidence']:.2f} (was {old_conf:.2f}, combined={combined:.2f})")
 
         return decision, indicators, combined
 
 
     async def evaluate_and_trade_top_tokens(self):
-        tokens = fetch_top_tokens(limit=10)
+        tokens = fetch_top_tokens(limit=5)
         if not tokens:
-            print(f"[MultiTokenTrader] No tokens candidates from trade history.")
+            # print(f"[MultiTokenTrader] No tokens candidates from trade history.")
             return False
 
 
         preferred_symbols = self.performance_tracker.top_tokens_by_pnl()
         if not preferred_symbols:
-            print(f"[MultiTokenTrader] No preferred symbols found. Falling back to ['SOL'].")
+            # print(f"[MultiTokenTrader] No preferred symbols found. Falling back to ['SOL'].")
             preferred_symbols = ['SOL']
 
         tokens = [t for t in tokens if t["symbol"] in preferred_symbols]
-        print(f"[MultiTokenTrader] Selected top tokens: {preferred_symbols}")
+        # print(f"[MultiTokenTrader] Selected top tokens: {preferred_symbols}")
 
 
         best_decision = {"confidence": 0.0}
@@ -167,11 +167,11 @@ class MultiTokenTrader:
 
 
         if best_token and self.risk.approve_trade(best_decision, best_indicators):
-            print(f"[MultiTokenTrader] Best decision {best_decision} for {best_token['symbol']}")
+            # print(f"[MultiTokenTrader] Best decision {best_decision} for {best_token['symbol']}")
             try:
                 tx_sig = await self.swapper.execute_swap(best_token, best_decision)
             except Exception as e:
-                print(f"[MultiTokenTrader] Swap failed: {e}")
+                # print(f"[MultiTokenTrader] Swap failed: {e}")
                 tx_sig = "-"
 
 
@@ -189,7 +189,7 @@ class MultiTokenTrader:
             return True
 
 
-        print(f"[MultiTokenTrader] Not valid trade executed.")
+        # print(f"[MultiTokenTrader] Not valid trade executed.")
         return False
 
 

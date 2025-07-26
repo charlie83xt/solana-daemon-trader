@@ -42,7 +42,7 @@ class JupiterSwapper:
             print(f"[JupyterSwapper] Skipping non-BUY action for {symbol}")
             return
 
-        print(f"[JupyterSwapper] Preparing swap: SOL -> {symbol}")
+        # print(f"[JupyterSwapper] Preparing swap: SOL -> {symbol}")
 
         try:
             output_mint_pubkey = Pubkey(token["address"])
@@ -127,7 +127,7 @@ class JupiterSwapper:
             result = self.client.send_raw_transaction(
                 bytes(txn), opts=TxOpts(skip_confirmation=False)
             )
-            print(f"[JupiterSwapper] Swap submitted: {result}")
+            # print(f"[JupiterSwapper] Swap submitted: {result}")
 
             return result.value
 
@@ -151,7 +151,7 @@ class JupiterSwapper:
                 raise ValueError(f"Mint account {mint_address} not found.")
             
             owner_program_id = account_info.owner
-            print(f"[JupiterSwapper] Mint {mint_address} owned by program {owner_program_id}")
+            # print(f"[JupiterSwapper] Mint {mint_address} owned by program {owner_program_id}")
             return owner_program_id
         except Exception as e:
             print(f"[JupiterSwapper] Error fetching mint program ID for {mint_address}: {e}")
@@ -168,17 +168,17 @@ class JupiterSwapper:
         target_token_program_id = TOKEN_PROGRAM_ID # Default to legacy
         if token_tags and 'token-2022' in token_tags:
             target_token_program_id = TOKEN_2022_PROGRAM_ID
-            print(f"[JupiterSwapper] Token {mint_address} identified as SPL Token 2022 via tags.")
+            # print(f"[JupiterSwapper] Token {mint_address} identified as SPL Token 2022 via tags.")
         else:
             # If not tags provided or not token-2022 fetch from chain
             try:
                 mint_owner_program_id = await self._get_mint_program_id(mint_address)
                 if mint_owner_program_id == TOKEN_2022_PROGRAM_ID:
                     target_token_program_id = TOKEN_2022_PROGRAM_ID
-                    print(f"[JupiterSwapper] Mint {mint_address} confirmed as SPL Token 2022 via on chain lookup.")
+                    # print(f"[JupiterSwapper] Mint {mint_address} confirmed as SPL Token 2022 via on chain lookup.")
                 else:
                     target_token_program_id = TOKEN_PROGRAM_ID
-                    print(f"[JupiterSwapper] Mint {mint_address} confirmed as legacy SPL via on chain lookup.")
+                    # print(f"[JupiterSwapper] Mint {mint_address} confirmed as legacy SPL via on chain lookup.")
             except Exception as e:
                 print(f"[JupiterSwapper] Could not confirm token program ID on-chain for {mint_address}, defaulting to legacy: {e}")
                 target_token_program_id = TOKEN_PROGRAM_ID
@@ -190,13 +190,13 @@ class JupiterSwapper:
         if response.value is not None:
             # Check if the existing ATA is owned by the correct program ID
             if response.value.owner == target_token_program_id:
-                print(f"[JupiterSwapper] ATA for {mint_address} already exists at {ata_address} (Correct Program)")
+                # print(f"[JupiterSwapper] ATA for {mint_address} already exists at {ata_address} (Correct Program)")
                 return ata_address
             else:
-                print(f"[JupiterSwapper] WARNING: ATA for {mint_address} exists at {ata_address} but owned by {response.value.owner} instead of {target_token_program_id}. This might cause issues.")
+                # print(f"[JupiterSwapper] WARNING: ATA for {mint_address} exists at {ata_address} but owned by {response.value.owner} instead of {target_token_program_id}. This might cause issues.")
                 pass
         
-        print(f"[JupiterSwapper] Creating ATA for {mint_address} at {ata_address} with Program ID: {target_token_program_id}")
+        # print(f"[JupiterSwapper] Creating ATA for {mint_address} at {ata_address} with Program ID: {target_token_program_id}")
 
         # Create intruction for ATA
         create_ata_ix = create_associated_token_account(
@@ -223,10 +223,10 @@ class JupiterSwapper:
             ata_creation_result = self.client.send_raw_transaction(
                 bytes(create_ata_txn), opts=TxOpts(skip_confirmation=False, preflight_commitment="confirmed")
             )
-            print(f"[JupiterSwapper] ATA creation submitted: {ata_creation_result.value}")
+            # print(f"[JupiterSwapper] ATA creation submitted: {ata_creation_result.value}")
             # Wait for confirmation of ATA creation
             self.client.confirm_transaction(ata_creation_result.value, commitment="confirmed")
-            print(f"[JupiterSwapper] ATA creation confirmed for: {mint_address}")
+            # print(f"[JupiterSwapper] ATA creation confirmed for: {mint_address}")
         except Exception as e:
             print(f"[JupiterSwapper] Failed to create ATA for {mint_address}: {e}")
             raise # Stop if fails

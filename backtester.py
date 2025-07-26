@@ -67,7 +67,7 @@ class Backtester:
 
     def summary(self):
         if not self.trade_log:
-            print("No trades were made.")
+            # print("No trades were made.")
             return
 
         df = pd.DataFrame(self.trade_log)

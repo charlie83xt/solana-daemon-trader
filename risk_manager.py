@@ -101,7 +101,7 @@ class RiskManager:
                     ret = (sell_price - price) / buy_price
                     return round(pnl, 4),  round(ret, 4)
             # except ValueError as ve:
-            print(f"[RiskManager] Not matching BUY found for SELL to calculate PnL.")
+            # print(f"[RiskManager] Not matching BUY found for SELL to calculate PnL.")
                     #     continue # Skip this row if amount/price are not floats
                     # except IndexError as ie:
                     #     print(f"[RiskManager] Column access error in calculate trade PnL for row: {row_idx + 2}: {row}. Error: {ie}")
@@ -200,7 +200,7 @@ class RiskManager:
             print(f"    Total PnL: {total_pnl:.4f} SOL")
 
             if open_nuy_positions:
-                print(f"    Warning: {len(open_nuy_positions)} unmatched BUY positions remaining in the log.")
+                # print(f"    Warning: {len(open_nuy_positions)} unmatched BUY positions remaining in the log.")
 
         except Exception as e:
             print(f" [RiskManager] Summary error: {e}")
@@ -298,7 +298,7 @@ class RiskManager:
 
     def approve_trade(self, decision, indicators):
         if not indicators:
-            print(f"[RiskManager] No indicators provided.")
+            # print(f"[RiskManager] No indicators provided.")
             return False
 
         action = decision.get("action")
@@ -307,33 +307,33 @@ class RiskManager:
         
         # 1. Only allow high confidence trades
         if confidence < self.min_confidence:
-            print(f"[RiskManager] Confidence too low: {confidence}")
+            # print(f"[RiskManager] Confidence too low: {confidence}")
             return False
         
         # 2. RSI-Based filter
         if action == 'BUY' and rsi > 70:
-            print(f"[RiskManager] RSI too high - market overbought.")
+            # print(f"[RiskManager] RSI too high - market overbought.")
             return False
         if action == 'SELL' and rsi < 30:
-            print(f"[RiskManager] RSI too low - market oversold.")
+            # print(f"[RiskManager] RSI too low - market oversold.")
             return False
 
         if self.is_cooldown_active():
-            print(f"[RiskManager] ")
+            # print(f"[RiskManager] ")
             return False
 
         # 3. Check daily loss cap
         if confidence < 0.75:
-            print(f"[RiskManager] Confidence too low: {confidence}")
+            # print(f"[RiskManager] Confidence too low: {confidence}")
             return False
 
         if self.loss_streak >= self.max_loss_streak:
-            print(f"[RiskManager] Trade rejected: max loss streak ({self.loss_streak} reached)")
+            # print(f"[RiskManager] Trade rejected: max loss streak ({self.loss_streak} reached)")
             return False
 
         daily_loss = self.calculate_daily_loss()
         if daily_loss > self.max_daily_loss:
-            print(f"[RiskManager] Trade rejected due to max daily loss ({daily_loss:.2f} > {self.max_daily_loss})")
+            # print(f"[RiskManager] Trade rejected due to max daily loss ({daily_loss:.2f} > {self.max_daily_loss})")
             return False
 
 

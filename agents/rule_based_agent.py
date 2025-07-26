@@ -14,7 +14,7 @@ class RuleBasedAgent(BaseAgent):
 
     async def get_decision(self, indicators):
         if not indicators or len(indicators) < 4:
-            print(f"[{self.__class__.__name__}] Insufficient indicators. Returning HOLD.")
+            # print(f"[{self.__class__.__name__}] Insufficient indicators. Returning HOLD.")
             return {"action": "HOLD", "amount": 0.0, "confidence": 0.0}
         
         price = indicators["price"]
