@@ -93,6 +93,7 @@ class AgentOrchestrator:
                     #     agent.conf_threshold = 0.6
                     if old_threshold != agent.conf_threshold:
                         # print(f"[PerformanceMonitor] Threshold adjusted from {old_threshold} to {agent.conf_threshold}")
+                        continue
 
         # Group by decisions by action type
         grouped = defaultdict(list)
