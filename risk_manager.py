@@ -199,8 +199,8 @@ class RiskManager:
             print(f"    Win Rate: {(wins / trades * 100):.2f}%" if trades > 0 else "    N/A")
             print(f"    Total PnL: {total_pnl:.4f} SOL")
 
-            if open_nuy_positions:
-                print(f"    Warning: {len(open_nuy_positions)} unmatched BUY positions remaining in the log.")
+            if open_buy_positions:
+                print(f"    Warning: {len(open_buy_positions)} unmatched BUY positions remaining in the log.")
 
         except Exception as e:
             print(f" [RiskManager] Summary error: {e}")
