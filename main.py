@@ -9,6 +9,7 @@ from token_performance import TokenPerformanceTracker
 from db import initialize_tables
 # from external_indicator_calculator import IndicatorCalculator
 import traceback
+import psutil
 
 # Inject Google Drive credentials from environment into local files
 # secrets_json = os.getenv("GOOGLE_CLIENT_SECRETS_JSON", "")
@@ -21,6 +22,11 @@ import traceback
 # if mycreds_txt.strip().startswith("{"):
 #     with open("mycreds.txt", "w") as f:
 #         f.write(mycreds_txt)
+
+def log_memory():
+    process =psutil.Process(os.getpid())
+    mem_mb = process.memory_info().rss / 1024 /1024
+    print(f"[MEMORY] RSS: {mem_mb:.2f} MB")
 
 async def main():
     initialize_tables()
@@ -52,6 +58,7 @@ async def main():
 
     while True:
         try:
+            log_memory()
             print("\n--- [Cycle Start] ---")
             price_logger.fetch_and_log_all()
 
