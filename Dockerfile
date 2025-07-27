@@ -20,6 +20,6 @@ RUN pip install -r requirements.txt
 
 
 # Default command (change if we are using entrypoint script)
-CMD ["python", "main.py"]
+CMD ["python", "-u", "main.py"]
 
 
