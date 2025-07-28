@@ -168,6 +168,7 @@ class MultiTokenTrader:
 
         if best_token and self.risk.approve_trade(best_decision, best_indicators):
             # print(f"[MultiTokenTrader] Best decision {best_decision} for {best_token['symbol']}")
+            best_decision["price"] = best_indicators.get("price")
             try:
                 tx_sig = await self.swapper.execute_swap(best_token, best_decision)
             except Exception as e:

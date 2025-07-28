@@ -231,6 +231,8 @@ class RiskManager:
             # next(reader) # Skipping header
             for row in rows:
                 timestamp_str, action, amount, price, *_ = row
+                if not isinstance(timestamp_str, str):
+                    timestamp_str = str(timestamp_str)
                 timestamp = datetime.fromisoformat(timestamp_str)
                 # if timestamp.date() == today:
 
