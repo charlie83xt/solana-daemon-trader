@@ -26,7 +26,7 @@ class PerformanceMonitor:
                     ORDER BY timestamp DESC
                     LIMIT %s
                 """, [self.window])
-                rows = conn.fetchall()
+                rows = cursor.fetchall()
 
             for pnl, ret, conf in rows:
                 try:
