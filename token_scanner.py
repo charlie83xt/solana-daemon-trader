@@ -3,7 +3,7 @@ import requests
 
 def fetch_top_tokens(limit=10):
     """
-    Fetch top sSolana tokens by volume from Jupoiter API
+    Efficiently fetch top Solana tokens by volume from Jupiter API
     """
 
     try:
@@ -15,6 +15,8 @@ def fetch_top_tokens(limit=10):
         # Trimming and parsing memory footprint
         tokens = res.json()
         filtered = []
+        count = 0
+
         # Filter for Solana-native tokens with USDC pairs
         # filtered = [t for t in tokens if t.get("extensions", {}).get("coingeckoId") and t.get("symbol") != "USDC"]
         for t in tokens:
@@ -27,15 +29,26 @@ def fetch_top_tokens(limit=10):
                     "address": t.get("address"),
                     "volume24h": t.get("volume24h", 0),
                 })
+                count += 1
 
-        print(f"[TokenScanner] Parsed {len(tokens)} tokens")
+            if count >= limit * 3:
+                break
+
         # Sort by market cap or volume if available
         sorted_tokens = sorted(filtered, key=lambda x: x["volume24h"], reverse=True)
-        return sorted_tokens[:5]
+        top_tokens = sorted_tokens[:limit]
+        print(f"[TokenScanner] Returning top {len(top_tokens)} tokens")
+        return top_tokens
 
     except Exception as e:
         print(f"[TokenScanner] Error fetching top tokens: {e}")
-        return [{"symbol": "SOL", "address": "So11111111111111111111111111111111111111112"}]
+        return [
+            {
+                "symbol": "SOL",
+                "address": "So11111111111111111111111111111111111111112",
+                "volume24h": 1000000
+            }
+        ]
 
 
 

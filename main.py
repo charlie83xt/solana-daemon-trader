@@ -24,8 +24,8 @@ import psutil
 #         f.write(mycreds_txt)
 
 def log_memory():
-    process =psutil.Process(os.getpid())
-    mem_mb = process.memory_info().rss / 1024 /1024
+    process = psutil.Process(os.getpid())
+    mem_mb = process.memory_info().rss / 1024 / 1024
     print(f"[MEMORY] RSS: {mem_mb:.2f} MB")
 
 async def main():
