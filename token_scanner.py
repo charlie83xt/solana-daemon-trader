@@ -28,9 +28,10 @@ def fetch_top_tokens(limit=10):
                     "volume24h": t.get("volume24h", 0),
                 })
 
+        print(f"[TokenScanner] Parsed {len(tokens)} tokens")
         # Sort by market cap or volume if available
         sorted_tokens = sorted(filtered, key=lambda x: x["volume24h"], reverse=True)
-        return sorted_tokens[:limit]
+        return sorted_tokens[:5]
 
     except Exception as e:
         print(f"[TokenScanner] Error fetching top tokens: {e}")
