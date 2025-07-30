@@ -7,7 +7,7 @@ def fetch_top_tokens(limit=10):
     """
 
     try:
-        url = "https://github.com/charlie83xt/updating_tokens/blob/main/filtered_tokens.json"
+        url = "https://raw.githubusercontent.com/charlie83xt/updating_tokens/refs/heads/main/filtered_tokens.json"
         res = requests.get(url, timeout=5)
         res.raise_for_status()
         
