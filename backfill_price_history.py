@@ -13,6 +13,14 @@ DB_PATH = "trading.db"
 ## Here we probably need somthing like insert if coin on COINGECKO_IDS
 symbol_to_id = COINGECKO_IDS
 # symbol_to_id = {
+#   "SOL": "solana",
+#   "USDT": "tether",
+#   "PYUSD": "paypal-usd",
+#   "WIF": "dogwifcoin",
+#   "BONK": "bonk",
+#   "JUP": "jupiter-exchange-solana"
+# }
+# symbol_to_id = {
 #     "JUP": "jupiter-exchange-solana"
 # }
 
