@@ -78,7 +78,7 @@ openai==1.91.0
 overrides==7.7.0
 packaging==25.0
 pandas==1.5.3
-pandas_ta
+git+https://github.com/twopirllc/pandas-ta
 pandocfilters==1.5.1
 parso==0.8.4
 pexpect==4.9.0
